@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/categories/</link>
+    <description>Recent content in Categories on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    
+	<atom:link href="https://lightsu1028.github.io/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>品鉴评论</title>
+      <link>https://lightsu1028.github.io/categories/%E5%93%81%E9%89%B4%E8%AF%84%E8%AE%BA/</link>
+      <pubDate>Mon, 11 Mar 2019 20:35:12 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/categories/%E5%93%81%E9%89%B4%E8%AF%84%E8%AE%BA/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>学海无涯</title>
+      <link>https://lightsu1028.github.io/categories/%E5%AD%A6%E6%B5%B7%E6%97%A0%E6%B6%AF/</link>
+      <pubDate>Sun, 25 Mar 2018 23:48:35 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/categories/%E5%AD%A6%E6%B5%B7%E6%97%A0%E6%B6%AF/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>对酒当歌</title>
+      <link>https://lightsu1028.github.io/categories/%E5%AF%B9%E9%85%92%E5%BD%93%E6%AD%8C/</link>
+      <pubDate>Mon, 26 Mar 2018 23:58:45 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/categories/%E5%AF%B9%E9%85%92%E5%BD%93%E6%AD%8C/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>杂技浅尝</title>
+      <link>https://lightsu1028.github.io/categories/%E6%9D%82%E6%8A%80%E6%B5%85%E5%B0%9D/</link>
+      <pubDate>Sat, 25 Aug 2018 22:59:59 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/categories/%E6%9D%82%E6%8A%80%E6%B5%85%E5%B0%9D/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>论文精读</title>
+      <link>https://lightsu1028.github.io/categories/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/</link>
+      <pubDate>Mon, 30 Jul 2018 17:41:23 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/categories/%E8%AE%BA%E6%96%87%E7%B2%BE%E8%AF%BB/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

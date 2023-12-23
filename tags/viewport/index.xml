@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Viewport on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/viewport/</link>
+    <description>Recent content in Viewport on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Tue, 14 Aug 2018 22:03:03 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/viewport/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>前端试水(3) 自适应与响应式布局</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B43-%E8%87%AA%E9%80%82%E5%BA%94%E4%B8%8E%E5%93%8D%E5%BA%94%E5%BC%8F%E5%B8%83%E5%B1%80/</link>
+      <pubDate>Tue, 14 Aug 2018 22:03:03 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B43-%E8%87%AA%E9%80%82%E5%BA%94%E4%B8%8E%E5%93%8D%E5%BA%94%E5%BC%8F%E5%B8%83%E5%B1%80/</guid>
+      <description>前言 其实一开始并没想考虑响应式布局的问题，但由于在幻灯片大图时找的样例有考虑到这个，就想对浮在幻灯片上的文字能否也有响应式的效果。昨晚研究一下，虽然没太掌握，效果也没有达到最优，但总算完成基础需求。 自适应布局与响应式布局 自适应布局和响应式布局网上有不少介绍，我比较认同以下这种。 自适应布局是很显然易见的概念，就是网页能自动适配不同大小屏幕，根据屏幕大小自动调整网页内容的宽度和高度，但是内容和布局还是</description>
+    </item>
+    
+  </channel>
+</rss>

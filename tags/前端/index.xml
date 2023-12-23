@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>前端 on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/%E5%89%8D%E7%AB%AF/</link>
+    <description>Recent content in 前端 on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Sat, 18 Aug 2018 20:14:59 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/%E5%89%8D%E7%AB%AF/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Blog养成记(14) 让同页滚动更平滑</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B014-%E8%AE%A9%E5%90%8C%E9%A1%B5%E6%BB%9A%E5%8A%A8%E6%9B%B4%E5%B9%B3%E6%BB%91/</link>
+      <pubDate>Sat, 18 Aug 2018 20:14:59 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B014-%E8%AE%A9%E5%90%8C%E9%A1%B5%E6%BB%9A%E5%8A%A8%E6%9B%B4%E5%B9%B3%E6%BB%91/</guid>
+      <description>&lt;p&gt;上一期说到增加toc侧边栏，但是直接跳转非常突兀，因此特地找了让同页跳转滚动更平滑的插件。使用步骤如下：&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Blog养成记(13) 增加一个TOC侧边栏</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B013-%E5%A2%9E%E5%8A%A0%E4%B8%80%E4%B8%AAtoc%E4%BE%A7%E8%BE%B9%E6%A0%8F/</link>
+      <pubDate>Fri, 17 Aug 2018 21:01:32 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B013-%E5%A2%9E%E5%8A%A0%E4%B8%80%E4%B8%AAtoc%E4%BE%A7%E8%BE%B9%E6%A0%8F/</guid>
+      <description>想在页面右侧保留一个固定在屏幕上的TOC导航栏(Table Of Content)，可以直接选择跳转的网页段落位置，此外也可以提醒文章结构。 Scrollspy 这个插件bootstrap中有，起名叫scrollspy滚动监听，但是原版的实在不是我想要的样式。之前在blog养成记10-实现幻灯片轮播效果中使用的mdb的这个插件有更好的样式，不过可惜这个是pro的样式，所以只能自己动手丰衣足食啦。 Bootstrap基础版 sc</description>
+    </item>
+    
+    <item>
+      <title>前端试水(3) 自适应与响应式布局</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B43-%E8%87%AA%E9%80%82%E5%BA%94%E4%B8%8E%E5%93%8D%E5%BA%94%E5%BC%8F%E5%B8%83%E5%B1%80/</link>
+      <pubDate>Tue, 14 Aug 2018 22:03:03 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B43-%E8%87%AA%E9%80%82%E5%BA%94%E4%B8%8E%E5%93%8D%E5%BA%94%E5%BC%8F%E5%B8%83%E5%B1%80/</guid>
+      <description>前言 其实一开始并没想考虑响应式布局的问题，但由于在幻灯片大图时找的样例有考虑到这个，就想对浮在幻灯片上的文字能否也有响应式的效果。昨晚研究一下，虽然没太掌握，效果也没有达到最优，但总算完成基础需求。 自适应布局与响应式布局 自适应布局和响应式布局网上有不少介绍，我比较认同以下这种。 自适应布局是很显然易见的概念，就是网页能自动适配不同大小屏幕，根据屏幕大小自动调整网页内容的宽度和高度，但是内容和布局还是</description>
+    </item>
+    
+    <item>
+      <title>Blog养成记(12) 给网页的图片加个蒙版</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B012-%E7%BB%99%E7%BD%91%E9%A1%B5%E7%9A%84%E5%9B%BE%E7%89%87%E5%8A%A0%E4%B8%AA%E8%92%99%E7%89%88/</link>
+      <pubDate>Mon, 13 Aug 2018 00:40:13 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B012-%E7%BB%99%E7%BD%91%E9%A1%B5%E7%9A%84%E5%9B%BE%E7%89%87%E5%8A%A0%E4%B8%AA%E8%92%99%E7%89%88/</guid>
+      <description>&lt;p&gt;上一期说到想给网站图标的图片加个蒙版，然而没有成功。那么网页中的图片么？经常看到个人图片都是圆形的，然而实际上上传的原图是方的。如果使用了蒙版功能，就可以对同一张图想怎么变形状就怎么变了。&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Blog养成记(11) 给网站加个小icon</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B011-%E7%BB%99%E7%BD%91%E7%AB%99%E5%8A%A0%E4%B8%AA%E5%B0%8Ficon/</link>
+      <pubDate>Mon, 13 Aug 2018 00:14:19 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B011-%E7%BB%99%E7%BD%91%E7%AB%99%E5%8A%A0%E4%B8%AA%E5%B0%8Ficon/</guid>
+      <description>&lt;p&gt;这部分其实很简单，只需要在&lt;code&gt;index.html&lt;/code&gt;的&lt;code&gt;&amp;lt;head&amp;gt;&lt;/code&gt;部分增加以下一句话就好：&lt;/p&gt;</description>
+    </item>
+    
+    <item>
+      <title>Blog养成记(10) 实现幻灯片(轮播)效果</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B010-%E5%AE%9E%E7%8E%B0%E5%B9%BB%E7%81%AF%E7%89%87%E8%BD%AE%E6%92%AD%E6%95%88%E6%9E%9C/</link>
+      <pubDate>Sun, 12 Aug 2018 01:41:43 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B010-%E5%AE%9E%E7%8E%B0%E5%B9%BB%E7%81%AF%E7%89%87%E8%BD%AE%E6%92%AD%E6%95%88%E6%9E%9C/</guid>
+      <description>前言 设计中首页有个大图，希望它能实现幻灯片的轮播效果，同时如果能够满足自适应的需求就更好了。对于幻灯片的轮播效果，一年前我试过一个在Github上的js插件，这次使用Bootstrap4发现这已经集成进Bootstrap的框架了，如果不是非要在网页上实现一个真的幻灯片，没必要再去整一个幻灯片的插件。 Carousel 基础版 在Bootstrap4中轮播组件称为Carousel，在官网就有对其使用的简单介绍。 简单说来</description>
+    </item>
+    
+    <item>
+      <title>Blog养成记(9) 项目结构&amp;前端环境配置</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B09-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E5%89%8D%E7%AB%AF%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Sat, 11 Aug 2018 19:00:35 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B09-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E5%89%8D%E7%AB%AF%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</guid>
+      <description>其实如果只是对静态页面进行修改，不需要配什么环境，只需要对html进行修改就好。 哦，不对，因为还是会使用hugo来生成静态页面，hugo还是要配置的，配置的方法详见这个系列的第2篇Blog养成记2 Hugo+Docker在Github上建立Blog。所以重点就在如何自己生成自己喜欢的hugo模板了。 由于仅使用hugo静态页面，所以也不计划使用gulp之类的工具，可能出了hugo外唯一考虑要使用的是s</description>
+    </item>
+    
+    <item>
+      <title>前端试水(2) 使用docker镜像的Sass配置</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B42-%E4%BD%BF%E7%94%A8docker%E9%95%9C%E5%83%8F%E7%9A%84sass%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Thu, 02 Aug 2018 15:49:22 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B42-%E4%BD%BF%E7%94%A8docker%E9%95%9C%E5%83%8F%E7%9A%84sass%E9%85%8D%E7%BD%AE/</guid>
+      <description>前言 半年前，由于终于将博客主题初版设计出来准备开始实施，在less和sass中纠结良久选择了sass。为了保持环境纯净性，想用docker装sass，用node-sass，试了几次中间都失败，无奈放弃。几乎半年后的今天，莫名又开始有搭建网页的欲望，于是又开始折腾。不过这次运气不错，终于折腾成功。 Sass是什么 Sass 是一个 css的预编译器。它在css语法的基础上，引入了更多的变量、规则等功能，可以帮助c</description>
+    </item>
+    
+    <item>
+      <title>前端试水(1) 前端技术路线</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B41-%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%B7%AF%E7%BA%BF/</link>
+      <pubDate>Wed, 01 Aug 2018 10:23:48 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/%E5%89%8D%E7%AB%AF%E8%AF%95%E6%B0%B41-%E5%89%8D%E7%AB%AF%E6%8A%80%E6%9C%AF%E8%B7%AF%E7%BA%BF/</guid>
+      <description>前言 对于前端的了解欲望实际上是从想对博客主题进行修改开始的。但是前端这部分一直对我来说是个谜，虽然这些名词都能搜索到，但一直傻傻的不得其门而入。总算在一年后的今天，尽管还有很多地方暂时是迷雾状态，但貌似略了解一点前端的整体框架。现在算是开了新的一个系列，在此算是记录一下我了解的前端的技术路线，如果那些和我一样的前端小白们能通过这个也大概了解一点到底现在需要学的、用的是什么，就再好不过了。 对了，先声</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>语法高亮 on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/%E8%AF%AD%E6%B3%95%E9%AB%98%E4%BA%AE/</link>
+    <description>Recent content in 语法高亮 on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Tue, 09 Jan 2018 17:52:25 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/%E8%AF%AD%E6%B3%95%E9%AB%98%E4%BA%AE/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Blog养成记(3) Hugo的语法高亮配置</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-01/blog%E5%85%BB%E6%88%90%E8%AE%B03-hugo%E7%9A%84%E8%AF%AD%E6%B3%95%E9%AB%98%E4%BA%AE%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Tue, 09 Jan 2018 17:52:25 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-01/blog%E5%85%BB%E6%88%90%E8%AE%B03-hugo%E7%9A%84%E8%AF%AD%E6%B3%95%E9%AB%98%E4%BA%AE%E9%85%8D%E7%BD%AE/</guid>
+      <description>前言 Hugo官网在这里给出了详细的语法高亮配置说明。 一般有以下几种常见方法： 1. 使用Hugo默认Chroma (弃，一些代码无法高亮) 使用Pygments (弃，一些代码无法高亮) 使用Highlight Shortcode (弃，高亮颜色渲染问题) 使用Highlight.js ✔️ 使用Pygments进行高亮 Hugo从0.28版本开始默认使用Chroma来作语法高亮。Chroma使用go编写的，渲染速度很快。 如果需要使用Py</description>
+    </item>
+    
+  </channel>
+</rss>

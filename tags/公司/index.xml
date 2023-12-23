@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>公司 on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/%E5%85%AC%E5%8F%B8/</link>
+    <description>Recent content in 公司 on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Thu, 18 Jan 2018 09:14:15 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/%E5%85%AC%E5%8F%B8/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>在公司建立python虚拟环境</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-01/%E5%9C%A8%E5%85%AC%E5%8F%B8%E5%BB%BA%E7%AB%8Bpython%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/</link>
+      <pubDate>Thu, 18 Jan 2018 09:14:15 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-01/%E5%9C%A8%E5%85%AC%E5%8F%B8%E5%BB%BA%E7%AB%8Bpython%E8%99%9A%E6%8B%9F%E7%8E%AF%E5%A2%83/</guid>
+      <description>前言 尽管官方已经声明python2.7在2020年就不再进行维护，但很多企业应用和第三方包还是建立在python2.7的版本上，进行切换有一定成本。而相比python3，python2对于中文编码处理也相对繁琐的多，因此新的应用一般都会建立在python3上。而python3的版本选择也有分歧，比如说，尽管截止目前为止最新的版本是python3.6，但是链接oracle的包cx_Oracle只在p</description>
+    </item>
+    
+  </channel>
+</rss>

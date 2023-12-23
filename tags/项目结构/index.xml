@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>项目结构 on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84/</link>
+    <description>Recent content in 项目结构 on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Sat, 11 Aug 2018 19:00:35 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Blog养成记(9) 项目结构&amp;前端环境配置</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B09-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E5%89%8D%E7%AB%AF%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</link>
+      <pubDate>Sat, 11 Aug 2018 19:00:35 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-08/blog%E5%85%BB%E6%88%90%E8%AE%B09-%E9%A1%B9%E7%9B%AE%E7%BB%93%E6%9E%84%E5%89%8D%E7%AB%AF%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE/</guid>
+      <description>其实如果只是对静态页面进行修改，不需要配什么环境，只需要对html进行修改就好。 哦，不对，因为还是会使用hugo来生成静态页面，hugo还是要配置的，配置的方法详见这个系列的第2篇Blog养成记2 Hugo+Docker在Github上建立Blog。所以重点就在如何自己生成自己喜欢的hugo模板了。 由于仅使用hugo静态页面，所以也不计划使用gulp之类的工具，可能出了hugo外唯一考虑要使用的是s</description>
+    </item>
+    
+  </channel>
+</rss>

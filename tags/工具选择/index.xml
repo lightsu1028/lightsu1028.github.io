@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>工具选择 on ZHENG Zi&#39;ou</title>
+    <link>https://lightsu1028.github.io/tags/%E5%B7%A5%E5%85%B7%E9%80%89%E6%8B%A9/</link>
+    <description>Recent content in 工具选择 on ZHENG Zi&#39;ou</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-Hans</language>
+    <lastBuildDate>Tue, 30 Jan 2018 21:07:19 +0800</lastBuildDate>
+    
+	<atom:link href="https://lightsu1028.github.io/tags/%E5%B7%A5%E5%85%B7%E9%80%89%E6%8B%A9/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Pycharm vs Notebook</title>
+      <link>https://lightsu1028.github.io/sci-tech/2018-01/pycharm-vs-notebook/</link>
+      <pubDate>Tue, 30 Jan 2018 21:07:19 +0800</pubDate>
+      
+      <guid>https://lightsu1028.github.io/sci-tech/2018-01/pycharm-vs-notebook/</guid>
+      <description>严格说来题目起的有些问题，pycharm是一个IDE (Integrated Development Environment)，而且在pycharm里同样也可以使用Notebook。这里主要是指传统的编程方式和Notebook交互式方式的比较和选择。这篇博客希望对那些和我一样有选择恐惧症并且非常迷茫的人有所帮助。 缘起 说起来接触python也已经一年半的时间。去年7月，哦不，应该是前年7月，刚入职才开始因为工作学习的python，首先遇到的就是</description>
+    </item>
+    
+  </channel>
+</rss>
