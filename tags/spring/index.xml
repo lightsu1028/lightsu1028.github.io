@@ -1,154 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Spring on lightsu's blog</title><link>https://example.com/tags/spring/</link><description>Recent content in Spring on lightsu's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Lightsu's blog</copyright><lastBuildDate>Wed, 11 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/tags/spring/index.xml" rel="self" type="application/rss+xml"/><item><title>Spring源码解析前置知识</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</link><pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.png" alt="Featured image of post Spring源码解析前置知识" />&lt;p>主要是介绍spring源码中涉及到的一些常用知识点例如一些API的用法介绍，便于读者在阅读后续Spring主流程源码时熟悉这些API。&lt;/p>
-&lt;h2 id="headings">Headings&lt;/h2>
-&lt;p>The following HTML &lt;code>&amp;lt;h1&amp;gt;&lt;/code>—&lt;code>&amp;lt;h6&amp;gt;&lt;/code> elements represent six levels of section headings. &lt;code>&amp;lt;h1&amp;gt;&lt;/code> is the highest section level while &lt;code>&amp;lt;h6&amp;gt;&lt;/code> is the lowest.&lt;/p>
-&lt;h1 id="h1">H1&lt;/h1>
-&lt;h2 id="h2">H2&lt;/h2>
-&lt;h3 id="h3">H3&lt;/h3>
-&lt;h4 id="h4">H4&lt;/h4>
-&lt;h5 id="h5">H5&lt;/h5>
-&lt;h6 id="h6">H6&lt;/h6>
-&lt;h2 id="paragraph">Paragraph&lt;/h2>
-&lt;p>Xerum, quo qui aut unt expliquam qui dolut labo. Aque venitatiusda cum, voluptionse latur sitiae dolessi aut parist aut dollo enim qui voluptate ma dolestendit peritin re plis aut quas inctum laceat est volestemque commosa as cus endigna tectur, offic to cor sequas etum rerum idem sintibus eiur? Quianimin porecus evelectur, cum que nis nust voloribus ratem aut omnimi, sitatur? Quiatem. Nam, omnis sum am facea corem alique molestrunt et eos evelece arcillit ut aut eos eos nus, sin conecerem erum fuga. Ri oditatquam, ad quibus unda veliamenimin cusam et facea ipsamus es exerum sitate dolores editium rerore eost, temped molorro ratiae volorro te reribus dolorer sperchicium faceata tiustia prat.&lt;/p>
-&lt;p>Itatur? Quiatae cullecum rem ent aut odis in re eossequodi nonsequ idebis ne sapicia is sinveli squiatum, core et que aut hariosam ex eat.&lt;/p>
-&lt;h2 id="blockquotes">Blockquotes&lt;/h2>
-&lt;p>The blockquote element represents content that is quoted from another source, optionally with a citation which must be within a &lt;code>footer&lt;/code> or &lt;code>cite&lt;/code> element, and optionally with in-line changes such as annotations and abbreviations.&lt;/p>
-&lt;h4 id="blockquote-without-attribution">Blockquote without attribution&lt;/h4>
-&lt;blockquote>
-&lt;p>Tiam, ad mint andaepu dandae nostion secatur sequo quae.
-&lt;strong>Note&lt;/strong> that you can use &lt;em>Markdown syntax&lt;/em> within a blockquote.&lt;/p>
-&lt;/blockquote>
-&lt;h4 id="blockquote-with-attribution">Blockquote with attribution&lt;/h4>
-&lt;blockquote>
-&lt;p>Don&amp;rsquo;t communicate by sharing memory, share memory by communicating.&lt;br>
-— &lt;cite>Rob Pike&lt;sup id="fnref:1">&lt;a href="#fn:1" class="footnote-ref" role="doc-noteref">1&lt;/a>&lt;/sup>&lt;/cite>&lt;/p>
-&lt;/blockquote>
-&lt;h2 id="tables">Tables&lt;/h2>
-&lt;p>Tables aren&amp;rsquo;t part of the core Markdown spec, but Hugo supports supports them out-of-the-box.&lt;/p>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>Name&lt;/th>
-&lt;th>Age&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>Bob&lt;/td>
-&lt;td>27&lt;/td>
-&lt;/tr>
-&lt;tr>
-&lt;td>Alice&lt;/td>
-&lt;td>23&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;h4 id="inline-markdown-within-tables">Inline Markdown within tables&lt;/h4>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>Italics&lt;/th>
-&lt;th>Bold&lt;/th>
-&lt;th>Code&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>&lt;em>italics&lt;/em>&lt;/td>
-&lt;td>&lt;strong>bold&lt;/strong>&lt;/td>
-&lt;td>&lt;code>code&lt;/code>&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;table>
-&lt;thead>
-&lt;tr>
-&lt;th>A&lt;/th>
-&lt;th>B&lt;/th>
-&lt;th>C&lt;/th>
-&lt;th>D&lt;/th>
-&lt;th>E&lt;/th>
-&lt;th>F&lt;/th>
-&lt;/tr>
-&lt;/thead>
-&lt;tbody>
-&lt;tr>
-&lt;td>Lorem ipsum dolor sit amet, consectetur adipiscing elit.&lt;/td>
-&lt;td>Phasellus ultricies, sapien non euismod aliquam, dui ligula tincidunt odio, at accumsan nulla sapien eget ex.&lt;/td>
-&lt;td>Proin eleifend dictum ipsum, non euismod ipsum pulvinar et. Vivamus sollicitudin, quam in pulvinar aliquam, metus elit pretium purus&lt;/td>
-&lt;td>Proin sit amet velit nec enim imperdiet vehicula.&lt;/td>
-&lt;td>Ut bibendum vestibulum quam, eu egestas turpis gravida nec&lt;/td>
-&lt;td>Sed scelerisque nec turpis vel viverra. Vivamus vitae pretium sapien&lt;/td>
-&lt;/tr>
-&lt;/tbody>
-&lt;/table>
-&lt;h2 id="code-blocks">Code Blocks&lt;/h2>
-&lt;h4 id="code-block-with-backticks">Code block with backticks&lt;/h4>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
-&lt;/span>&lt;span class="lnt"> 2
-&lt;/span>&lt;span class="lnt"> 3
-&lt;/span>&lt;span class="lnt"> 4
-&lt;/span>&lt;span class="lnt"> 5
-&lt;/span>&lt;span class="lnt"> 6
-&lt;/span>&lt;span class="lnt"> 7
-&lt;/span>&lt;span class="lnt"> 8
-&lt;/span>&lt;span class="lnt"> 9
-&lt;/span>&lt;span class="lnt">10
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-html" data-lang="html">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&amp;lt;!doctype html&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">html&lt;/span> &lt;span class="na">lang&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s">&amp;#34;en&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">head&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">meta&lt;/span> &lt;span class="na">charset&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s">&amp;#34;utf-8&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">title&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>Example HTML5 Document&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">title&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">head&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">body&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">p&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>Test&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">p&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">body&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">html&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h4 id="code-block-indented-with-four-spaces">Code block indented with four spaces&lt;/h4>
-&lt;pre>&lt;code>&amp;lt;!doctype html&amp;gt;
-&amp;lt;html lang=&amp;quot;en&amp;quot;&amp;gt;
-&amp;lt;head&amp;gt;
-&amp;lt;meta charset=&amp;quot;utf-8&amp;quot;&amp;gt;
-&amp;lt;title&amp;gt;Example HTML5 Document&amp;lt;/title&amp;gt;
-&amp;lt;/head&amp;gt;
-&amp;lt;body&amp;gt;
-&amp;lt;p&amp;gt;Test&amp;lt;/p&amp;gt;
-&amp;lt;/body&amp;gt;
-&amp;lt;/html&amp;gt;
-&lt;/code>&lt;/pre>
-&lt;h4 id="code-block-with-hugos-internal-highlight-shortcode">Code block with Hugo&amp;rsquo;s internal highlight shortcode&lt;/h4>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
-&lt;/span>&lt;span class="lnt"> 2
-&lt;/span>&lt;span class="lnt"> 3
-&lt;/span>&lt;span class="lnt"> 4
-&lt;/span>&lt;span class="lnt"> 5
-&lt;/span>&lt;span class="lnt"> 6
-&lt;/span>&lt;span class="lnt"> 7
-&lt;/span>&lt;span class="lnt"> 8
-&lt;/span>&lt;span class="lnt"> 9
-&lt;/span>&lt;span class="lnt">10
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-html" data-lang="html">&lt;span class="line">&lt;span class="cl">&lt;span class="cp">&amp;lt;!doctype html&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">html&lt;/span> &lt;span class="na">lang&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s">&amp;#34;en&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">head&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">meta&lt;/span> &lt;span class="na">charset&lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="s">&amp;#34;utf-8&amp;#34;&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">title&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>Example HTML5 Document&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">title&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">head&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">body&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">&amp;lt;&lt;/span>&lt;span class="nt">p&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>Test&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">p&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">body&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">&amp;lt;/&lt;/span>&lt;span class="nt">html&lt;/span>&lt;span class="p">&amp;gt;&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>
-&lt;h4 id="diff-code-block">Diff code block&lt;/h4>
+&lt;h2 id="beandefinition">BeanDefinition&lt;/h2>
+&lt;p>&lt;code>BeanDefinition&lt;/code>表示Bean定义，&lt;code>BeanDefinition&lt;/code>中存在很多属性用来描述一个Bean的特点。比如：&lt;/p>
+&lt;ul>
+&lt;li>class，表示Bean类型&lt;/li>
+&lt;li>scope，表示Bean作用域，单例或原型等&lt;/li>
+&lt;li>lazyInit：表示Bean是否是懒加载&lt;/li>
+&lt;li>initMethodName：表示Bean初始化时要执行的方法&lt;/li>
+&lt;li>destroyMethodName：表示Bean销毁时要执行的方法&lt;/li>
+&lt;li>&amp;hellip;&lt;/li>
+&lt;/ul>
+&lt;p>在Spring中，我们经常会通过以下几种方式来定义Bean:&lt;/p>
+&lt;ul>
+&lt;li>&amp;lt;bean/&amp;gt;&lt;/li>
+&lt;li>@Bean&lt;/li>
+&lt;li>@Component(@Service,@Controller)&lt;/li>
+&lt;/ul>
+&lt;p>这些，我们可以称之&lt;em>&lt;strong>申明式&lt;/strong>&lt;/em>定义Bean。
+还可以编程式定义Bean，那就是直接通过&lt;code>BeanDefinition&lt;/code>，比如：&lt;/p>
 &lt;div class="highlight">&lt;div class="chroma">
 &lt;table class="lntable">&lt;tr>&lt;td class="lntd">
 &lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
@@ -156,62 +24,119 @@
 &lt;/span>&lt;span class="lnt">3
 &lt;/span>&lt;span class="lnt">4
 &lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
 &lt;/span>&lt;/code>&lt;/pre>&lt;/td>
 &lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-diff" data-lang="diff">&lt;span class="line">&lt;span class="cl">[dependencies.bevy]
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">git = &amp;#34;https://github.com/bevyengine/bevy&amp;#34;
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">rev = &amp;#34;11f52b8c72fc3a568e8bb4a4cd1f3eb025ac2e13&amp;#34;
-&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gd">- features = [&amp;#34;dynamic&amp;#34;]
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="gd">&lt;/span>&lt;span class="gi">+ features = [&amp;#34;jpeg&amp;#34;, &amp;#34;dynamic&amp;#34;]
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 生成一个BeanDefinition对象，并设置beanClass为User.class，并注册到ApplicationContext中&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AbstractBeanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">BeanDefinitionBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">genericBeanDefinition&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="na">getBeanDefinition&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setBeanClass&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registerBeanDefinition&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
-&lt;/div>&lt;h2 id="list-types">List Types&lt;/h2>
-&lt;h4 id="ordered-list">Ordered List&lt;/h4>
-&lt;ol>
-&lt;li>First item&lt;/li>
-&lt;li>Second item&lt;/li>
-&lt;li>Third item&lt;/li>
-&lt;/ol>
-&lt;h4 id="unordered-list">Unordered List&lt;/h4>
-&lt;ul>
-&lt;li>List item&lt;/li>
-&lt;li>Another item&lt;/li>
-&lt;li>And another item&lt;/li>
-&lt;/ul>
-&lt;h4 id="nested-list">Nested list&lt;/h4>
-&lt;ul>
-&lt;li>Fruit
-&lt;ul>
-&lt;li>Apple&lt;/li>
-&lt;li>Orange&lt;/li>
-&lt;li>Banana&lt;/li>
-&lt;/ul>
-&lt;/li>
-&lt;li>Dairy
-&lt;ul>
-&lt;li>Milk&lt;/li>
-&lt;li>Cheese&lt;/li>
-&lt;/ul>
-&lt;/li>
-&lt;/ul>
-&lt;h2 id="other-elements--abbr-sub-sup-kbd-mark">Other Elements — abbr, sub, sup, kbd, mark&lt;/h2>
-&lt;p>&lt;abbr title="Graphics Interchange Format">GIF&lt;/abbr> is a bitmap image format.&lt;/p>
-&lt;p>H&lt;sub>2&lt;/sub>O&lt;/p>
-&lt;p>X&lt;sup>n&lt;/sup> + Y&lt;sup>n&lt;/sup> = Z&lt;sup>n&lt;/sup>&lt;/p>
-&lt;p>Press &lt;kbd>CTRL&lt;/kbd> + &lt;kbd>ALT&lt;/kbd> + &lt;kbd>Delete&lt;/kbd> to end the session.&lt;/p>
-&lt;p>Most &lt;mark>salamanders&lt;/mark> are nocturnal, and hunt for insects, worms, and other small creatures.&lt;/p>
-&lt;h2 id="hyperlinked-image">Hyperlinked image&lt;/h2>
-&lt;p>&lt;a class="link" href="https://google.com" target="_blank" rel="noopener"
->&lt;img src="https://www.google.com/images/branding/googlelogo/1x/googlelogo_light_color_272x92dp.png"
-loading="lazy"
-alt="Google"
->&lt;/a>&lt;/p>
-&lt;div class="footnotes" role="doc-endnotes">
-&lt;hr>
-&lt;ol>
-&lt;li id="fn:1">
-&lt;p>The above quote is excerpted from Rob Pike&amp;rsquo;s &lt;a class="link" href="https://www.youtube.com/watch?v=PAAkCSZUG1c" target="_blank" rel="noopener"
->talk&lt;/a> during Gopherfest, November 18, 2015.&amp;#160;&lt;a href="#fnref:1" class="footnote-backref" role="doc-backlink">&amp;#x21a9;&amp;#xfe0e;&lt;/a>&lt;/p>
-&lt;/li>
-&lt;/ol>
-&lt;/div></description></item></channel></rss>
+&lt;/div>&lt;p>我们还可以通过BeanDefinition设置一个Bean的其他属性&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setScope&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;prototype&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置作用域&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setInitMethodName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;init&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置初始化方法&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setLazyInit&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置懒加载&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>和申明式事务、编程式事务类似，通过&amp;lt;bean/&amp;gt;，@Bean，@Component等申明式方式所定义的Bean，最终都会被Spring解析为对应的&lt;code>BeanDefinition&lt;/code>对象，并放入Spring容器中。&lt;/p>
+&lt;h2 id="beandefinitionreader">BeanDefinitionReader&lt;/h2>
+&lt;p>接下来，我们来介绍几种在Spring源码中所提供的&lt;code>BeanDefinition&lt;/code>读取器（&lt;code>BeanDefinitionReader&lt;/code>），这些&lt;code>BeanDefinitionReader&lt;/code>在我们使用Spring时用得少，但在Spring源码中用得多，相当于Spring源码的基础设施。&lt;/p>
+&lt;h3 id="annotatedbeandefinitionreader">AnnotatedBeanDefinitionReader&lt;/h3>
+&lt;p>可以直接把某个类转换为BeanDefinition，并且会解析该类上的注解，比如:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 将User.class解析为BeanDefinition&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">register&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>注意：它能解析的注解是：@Conditional，@Scope、@Lazy、@Primary、@DependsOn、@Role、@Description&lt;/p>
+&lt;h3 id="xmlbeandefinitionreader">XmlBeanDefinitionReader&lt;/h3>
+&lt;p>可以解析&amp;lt;bean/&amp;gt;标签&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">loadBeanDefinitions&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;spring.xml&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="classpathbeandefinitionscanner">ClassPathBeanDefinitionScanner&lt;/h3>
+&lt;p>ClassPathBeanDefinitionScanner是扫描器，但是它的作用和BeanDefinitionReader类似，它可以进行扫描，扫描某个包路径，对扫描到的类进行解析，比如，扫描到的类上如果存在@Component注解，那么就会把这个类解析为一个BeanDefinition，比如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">refresh&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">scan&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.zhouyu&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;userService&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="beanfactory">BeanFactory&lt;/h2>
+&lt;h2 id="applicationcontext">ApplicationContext&lt;/h2>
+&lt;h3 id="annotationconfigapplicationcontext">AnnotationConfigApplicationContext&lt;/h3>
+&lt;h3 id="classpathxmlapplicationcontext">ClassPathXmlApplicationContext&lt;/h3>
+&lt;h3 id="国际化">国际化&lt;/h3>
+&lt;h3 id="资源加载">资源加载&lt;/h3>
+&lt;h3 id="获取运行时环境">获取运行时环境&lt;/h3>
+&lt;h3 id="事件发布">事件发布&lt;/h3>
+&lt;h2 id="类型转化">类型转化&lt;/h2>
+&lt;h3 id="propertyeditor">PropertyEditor&lt;/h3>
+&lt;h3 id="conversionservice">ConversionService&lt;/h3>
+&lt;h3 id="typeconverter">TypeConverter&lt;/h3>
+&lt;h2 id="ordercomparator">OrderComparator&lt;/h2>
+&lt;h2 id="beanpostprocessor">BeanPostProcessor&lt;/h2>
+&lt;h2 id="beanfactorypostprocessor">BeanFactoryPostProcessor&lt;/h2>
+&lt;h2 id="factorybean">FactoryBean&lt;/h2>
+&lt;h2 id="excludefilter和includefilter">ExcludeFilter和IncludeFilter&lt;/h2>
+&lt;h2 id="metadatareaderclassmetadataannotationmetadata">MetadataReader、ClassMetadata、AnnotationMetadata&lt;/h2></description></item></channel></rss>
