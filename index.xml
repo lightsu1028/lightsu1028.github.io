@@ -1,4 +1,145 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>lightsu's blog</title><link>https://example.com/</link><description>Recent content on lightsu's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Lightsu's blog</copyright><lastBuildDate>Thu, 19 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/index.xml" rel="self" type="application/rss+xml"/><item><title>Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</link><pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/bd.jpg" alt="Featured image of post Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner" />&lt;p>主要是介绍Spring framework中在解析BeanDefinition时用到的ClassPathBeanDefinitionScanner以及涉及的一些底层API。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>lightsu's blog</title><link>https://example.com/</link><description>Recent content on lightsu's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Lightsu's blog</copyright><lastBuildDate>Wed, 25 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/index.xml" rel="self" type="application/rss+xml"/><item><title>ClassPathBeanDefinitionScanner主流程源码解析</title><link>https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</link><pubDate>Wed, 25 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</guid><description>&lt;img src="https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/bd.jpeg" alt="Featured image of post ClassPathBeanDefinitionScanner主流程源码解析" />&lt;p>本篇文章主要是介绍Spring在生成BeanDefinition的过程中，涉及到的核心组件ClassPathBeanDefinitionScanner的主流程源码解析。ClassPathBeanDefinitionScanner涉及到的相关底层API使用我在另一篇博文中已经介绍过了&lt;a class="link" href="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/#前言" >Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner&lt;/a>&lt;/p>
+&lt;h2 id="beandefinition">BeanDefinition&lt;/h2>
+&lt;p>&lt;code>BeanDefinition&lt;/code>表示Bean定义，&lt;code>BeanDefinition&lt;/code>中存在很多属性用来描述一个Bean的特点。比如：&lt;/p>
+&lt;ul>
+&lt;li>class，表示Bean类型&lt;/li>
+&lt;li>scope，表示Bean作用域，单例或原型等&lt;/li>
+&lt;li>lazyInit：表示Bean是否是懒加载&lt;/li>
+&lt;li>initMethodName：表示Bean初始化时要执行的方法&lt;/li>
+&lt;li>destroyMethodName：表示Bean销毁时要执行的方法&lt;/li>
+&lt;li>&amp;hellip;&lt;/li>
+&lt;/ul>
+&lt;p>在Spring中，我们经常会通过以下几种方式来定义Bean:&lt;/p>
+&lt;ul>
+&lt;li>&amp;lt;bean/&amp;gt;&lt;/li>
+&lt;li>@Bean&lt;/li>
+&lt;li>@Component(@Service,@Controller)&lt;/li>
+&lt;/ul>
+&lt;p>这些，我们可以称之&lt;em>&lt;strong>申明式&lt;/strong>&lt;/em>定义Bean。
+还可以编程式定义Bean，那就是直接通过&lt;code>BeanDefinition&lt;/code>，比如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 生成一个BeanDefinition对象，并设置beanClass为User.class，并注册到ApplicationContext中&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AbstractBeanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">BeanDefinitionBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">genericBeanDefinition&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="na">getBeanDefinition&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setBeanClass&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registerBeanDefinition&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>我们还可以通过BeanDefinition设置一个Bean的其他属性&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setScope&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;prototype&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置作用域&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setInitMethodName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;init&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置初始化方法&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setLazyInit&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置懒加载&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>和申明式事务、编程式事务类似，通过&amp;lt;bean/&amp;gt;，@Bean，@Component等申明式方式所定义的Bean，最终都会被Spring解析为对应的&lt;code>BeanDefinition&lt;/code>对象，并放入Spring容器中。&lt;/p>
+&lt;h2 id="beandefinitionreader">BeanDefinitionReader&lt;/h2>
+&lt;p>接下来，我们来介绍几种在Spring源码中所提供的&lt;code>BeanDefinition&lt;/code>读取器（&lt;code>BeanDefinitionReader&lt;/code>），这些&lt;code>BeanDefinitionReader&lt;/code>在我们使用Spring时用得少，但在Spring源码中用得多，相当于Spring源码的基础设施。&lt;/p>
+&lt;h3 id="annotatedbeandefinitionreader">AnnotatedBeanDefinitionReader&lt;/h3>
+&lt;p>可以直接把某个类转换为BeanDefinition，并且会解析该类上的注解，比如:&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 将User.class解析为BeanDefinition&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">register&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>注意：它能解析的注解是：@Conditional，@Scope、@Lazy、@Primary、@DependsOn、@Role、@Description&lt;/p>
+&lt;h3 id="xmlbeandefinitionreader">XmlBeanDefinitionReader&lt;/h3>
+&lt;p>可以解析&amp;lt;bean/&amp;gt;标签&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">loadBeanDefinitions&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;spring.xml&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="classpathbeandefinitionscanner">ClassPathBeanDefinitionScanner&lt;/h3>
+&lt;p>ClassPathBeanDefinitionScanner是扫描器，但是它的作用和BeanDefinitionReader类似，它可以进行扫描，扫描某个包路径，对扫描到的类进行解析，比如，扫描到的类上如果存在@Component注解，那么就会把这个类解析为一个BeanDefinition，比如：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">refresh&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">scan&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.zhouyu&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;userService&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h2 id="beanfactory">BeanFactory&lt;/h2>
+&lt;h2 id="applicationcontext">ApplicationContext&lt;/h2>
+&lt;h3 id="annotationconfigapplicationcontext">AnnotationConfigApplicationContext&lt;/h3>
+&lt;h3 id="classpathxmlapplicationcontext">ClassPathXmlApplicationContext&lt;/h3>
+&lt;h3 id="国际化">国际化&lt;/h3>
+&lt;h3 id="资源加载">资源加载&lt;/h3>
+&lt;h3 id="获取运行时环境">获取运行时环境&lt;/h3>
+&lt;h3 id="事件发布">事件发布&lt;/h3>
+&lt;h2 id="类型转化">类型转化&lt;/h2>
+&lt;h3 id="propertyeditor">PropertyEditor&lt;/h3>
+&lt;h3 id="conversionservice">ConversionService&lt;/h3>
+&lt;h3 id="typeconverter">TypeConverter&lt;/h3>
+&lt;h2 id="ordercomparator">OrderComparator&lt;/h2>
+&lt;h2 id="beanpostprocessor">BeanPostProcessor&lt;/h2>
+&lt;h2 id="beanfactorypostprocessor">BeanFactoryPostProcessor&lt;/h2>
+&lt;h2 id="factorybean">FactoryBean&lt;/h2>
+&lt;h2 id="excludefilter和includefilter">ExcludeFilter和IncludeFilter&lt;/h2>
+&lt;h2 id="metadatareaderclassmetadataannotationmetadata">MetadataReader、ClassMetadata、AnnotationMetadata&lt;/h2></description></item><item><title>Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</link><pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/bd.jpeg" alt="Featured image of post Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner" />&lt;p>主要是介绍Spring framework中在解析BeanDefinition时用到的ClassPathBeanDefinitionScanner以及涉及的一些底层API。&lt;/p>
 &lt;h2 id="前言">前言&lt;/h2>
 &lt;p>在Spring中我们可以通过编程式的方式显示声明定义BeanDefinition：&lt;/p>
 &lt;div class="highlight">&lt;div class="chroma">
@@ -420,7 +561,7 @@ data-flex-basis="514px"
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
-&lt;/div>&lt;p>&lt;code>AbstractTypeHierarchyTraversingFilter#matchSelf&lt;/code>方法默认返回false,AnnotationTypeFilter重写了matchSelf方法，使用metadataReader获取当前资源的元数据信息判断是否包含目标注解，metadata.hasMetaAnnotation方法会递归地去解析资源上是否包含目标注解。什么意思呢？比如当前类上使用了@Service注解，metadata.hasMetaAnnotation会检查@Service注解里面是否有@Component注解。&lt;/p>
+&lt;/div>&lt;p>&lt;code>AbstractTypeHierarchyTraversingFilter#matchSelf&lt;/code>方法默认返回false,AnnotationTypeFilter重写了matchSelf方法，使用metadataReader获取当前资源的元数据信息判断是否包含目标注解（默认@Component），metadata.hasMetaAnnotation方法会递归地去解析资源上是否包含目标注解。什么意思呢？比如当前类上使用了@Service注解，metadata.hasMetaAnnotation会检查@Service注解里面是否有@Component注解。&lt;/p>
 &lt;h4 id="assignabletypefilter">AssignableTypeFilter&lt;/h4>
 &lt;div class="highlight">&lt;div class="chroma">
 &lt;table class="lntable">&lt;tr>&lt;td class="lntd">
