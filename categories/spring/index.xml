@@ -1,145 +1,4 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Spring on lightsu's blog</title><link>https://example.com/categories/spring/</link><description>Recent content in Spring on lightsu's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Lightsu's blog</copyright><lastBuildDate>Wed, 25 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/spring/index.xml" rel="self" type="application/rss+xml"/><item><title>ClassPathBeanDefinitionScanner主流程源码解析</title><link>https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</link><pubDate>Wed, 25 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/</guid><description>&lt;img src="https://example.com/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/bd.jpeg" alt="Featured image of post ClassPathBeanDefinitionScanner主流程源码解析" />&lt;p>本篇文章主要是介绍Spring在生成BeanDefinition的过程中，涉及到的核心组件ClassPathBeanDefinitionScanner的主流程源码解析。ClassPathBeanDefinitionScanner涉及到的相关底层API使用我在另一篇博文中已经介绍过了&lt;a class="link" href="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/#前言" >Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner&lt;/a>&lt;/p>
-&lt;h2 id="beandefinition">BeanDefinition&lt;/h2>
-&lt;p>&lt;code>BeanDefinition&lt;/code>表示Bean定义，&lt;code>BeanDefinition&lt;/code>中存在很多属性用来描述一个Bean的特点。比如：&lt;/p>
-&lt;ul>
-&lt;li>class，表示Bean类型&lt;/li>
-&lt;li>scope，表示Bean作用域，单例或原型等&lt;/li>
-&lt;li>lazyInit：表示Bean是否是懒加载&lt;/li>
-&lt;li>initMethodName：表示Bean初始化时要执行的方法&lt;/li>
-&lt;li>destroyMethodName：表示Bean销毁时要执行的方法&lt;/li>
-&lt;li>&amp;hellip;&lt;/li>
-&lt;/ul>
-&lt;p>在Spring中，我们经常会通过以下几种方式来定义Bean:&lt;/p>
-&lt;ul>
-&lt;li>&amp;lt;bean/&amp;gt;&lt;/li>
-&lt;li>@Bean&lt;/li>
-&lt;li>@Component(@Service,@Controller)&lt;/li>
-&lt;/ul>
-&lt;p>这些，我们可以称之&lt;em>&lt;strong>申明式&lt;/strong>&lt;/em>定义Bean。
-还可以编程式定义Bean，那就是直接通过&lt;code>BeanDefinition&lt;/code>，比如：&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
-&lt;/span>&lt;span class="lnt">2
-&lt;/span>&lt;span class="lnt">3
-&lt;/span>&lt;span class="lnt">4
-&lt;/span>&lt;span class="lnt">5
-&lt;/span>&lt;span class="lnt">6
-&lt;/span>&lt;span class="lnt">7
-&lt;/span>&lt;span class="lnt">8
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 生成一个BeanDefinition对象，并设置beanClass为User.class，并注册到ApplicationContext中&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AbstractBeanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">BeanDefinitionBuilder&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">genericBeanDefinition&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="na">getBeanDefinition&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setBeanClass&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registerBeanDefinition&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;p>我们还可以通过BeanDefinition设置一个Bean的其他属性&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
-&lt;/span>&lt;span class="lnt">2
-&lt;/span>&lt;span class="lnt">3
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setScope&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;prototype&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置作用域&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setInitMethodName&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;init&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置初始化方法&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">beanDefinition&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">setLazyInit&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kc">true&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="c1">// 设置懒加载&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;p>和申明式事务、编程式事务类似，通过&amp;lt;bean/&amp;gt;，@Bean，@Component等申明式方式所定义的Bean，最终都会被Spring解析为对应的&lt;code>BeanDefinition&lt;/code>对象，并放入Spring容器中。&lt;/p>
-&lt;h2 id="beandefinitionreader">BeanDefinitionReader&lt;/h2>
-&lt;p>接下来，我们来介绍几种在Spring源码中所提供的&lt;code>BeanDefinition&lt;/code>读取器（&lt;code>BeanDefinitionReader&lt;/code>），这些&lt;code>BeanDefinitionReader&lt;/code>在我们使用Spring时用得少，但在Spring源码中用得多，相当于Spring源码的基础设施。&lt;/p>
-&lt;h3 id="annotatedbeandefinitionreader">AnnotatedBeanDefinitionReader&lt;/h3>
-&lt;p>可以直接把某个类转换为BeanDefinition，并且会解析该类上的注解，比如:&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
-&lt;/span>&lt;span class="lnt">2
-&lt;/span>&lt;span class="lnt">3
-&lt;/span>&lt;span class="lnt">4
-&lt;/span>&lt;span class="lnt">5
-&lt;/span>&lt;span class="lnt">6
-&lt;/span>&lt;span class="lnt">7
-&lt;/span>&lt;span class="lnt">8
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotatedBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// 将User.class解析为BeanDefinition&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">annotatedBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">register&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">User&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;p>注意：它能解析的注解是：@Conditional，@Scope、@Lazy、@Primary、@DependsOn、@Role、@Description&lt;/p>
-&lt;h3 id="xmlbeandefinitionreader">XmlBeanDefinitionReader&lt;/h3>
-&lt;p>可以解析&amp;lt;bean/&amp;gt;标签&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
-&lt;/span>&lt;span class="lnt">2
-&lt;/span>&lt;span class="lnt">3
-&lt;/span>&lt;span class="lnt">4
-&lt;/span>&lt;span class="lnt">5
-&lt;/span>&lt;span class="lnt">6
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AppConfig&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">class&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">XmlBeanDefinitionReader&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">xmlBeanDefinitionReader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">loadBeanDefinitions&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;spring.xml&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;user&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h3 id="classpathbeandefinitionscanner">ClassPathBeanDefinitionScanner&lt;/h3>
-&lt;p>ClassPathBeanDefinitionScanner是扫描器，但是它的作用和BeanDefinitionReader类似，它可以进行扫描，扫描某个包路径，对扫描到的类进行解析，比如，扫描到的类上如果存在@Component注解，那么就会把这个类解析为一个BeanDefinition，比如：&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
-&lt;/span>&lt;span class="lnt">2
-&lt;/span>&lt;span class="lnt">3
-&lt;/span>&lt;span class="lnt">4
-&lt;/span>&lt;span class="lnt">5
-&lt;/span>&lt;span class="lnt">6
-&lt;/span>&lt;span class="lnt">7
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigApplicationContext&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">refresh&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ClassPathBeanDefinitionScanner&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">scanner&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">scan&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.zhouyu&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">context&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;userService&amp;#34;&lt;/span>&lt;span class="p">));&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;h2 id="beanfactory">BeanFactory&lt;/h2>
-&lt;h2 id="applicationcontext">ApplicationContext&lt;/h2>
-&lt;h3 id="annotationconfigapplicationcontext">AnnotationConfigApplicationContext&lt;/h3>
-&lt;h3 id="classpathxmlapplicationcontext">ClassPathXmlApplicationContext&lt;/h3>
-&lt;h3 id="国际化">国际化&lt;/h3>
-&lt;h3 id="资源加载">资源加载&lt;/h3>
-&lt;h3 id="获取运行时环境">获取运行时环境&lt;/h3>
-&lt;h3 id="事件发布">事件发布&lt;/h3>
-&lt;h2 id="类型转化">类型转化&lt;/h2>
-&lt;h3 id="propertyeditor">PropertyEditor&lt;/h3>
-&lt;h3 id="conversionservice">ConversionService&lt;/h3>
-&lt;h3 id="typeconverter">TypeConverter&lt;/h3>
-&lt;h2 id="ordercomparator">OrderComparator&lt;/h2>
-&lt;h2 id="beanpostprocessor">BeanPostProcessor&lt;/h2>
-&lt;h2 id="beanfactorypostprocessor">BeanFactoryPostProcessor&lt;/h2>
-&lt;h2 id="factorybean">FactoryBean&lt;/h2>
-&lt;h2 id="excludefilter和includefilter">ExcludeFilter和IncludeFilter&lt;/h2>
-&lt;h2 id="metadatareaderclassmetadataannotationmetadata">MetadataReader、ClassMetadata、AnnotationMetadata&lt;/h2></description></item><item><title>Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</link><pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/bd.jpeg" alt="Featured image of post Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner" />&lt;p>主要是介绍Spring framework中在解析BeanDefinition时用到的ClassPathBeanDefinitionScanner以及涉及的一些底层API。&lt;/p>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Spring on lightsu's blog</title><link>https://example.com/categories/spring/</link><description>Recent content in Spring on lightsu's blog</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><copyright>Lightsu's blog</copyright><lastBuildDate>Thu, 19 Jan 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://example.com/categories/spring/index.xml" rel="self" type="application/rss+xml"/><item><title>Spring BeanDefinition解析之ClassPathBeanDefinitionScanner</title><link>https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</link><pubDate>Thu, 19 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/</guid><description>&lt;img src="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/bd.jpeg" alt="Featured image of post Spring BeanDefinition解析之ClassPathBeanDefinitionScanner" />&lt;p>主要是介绍Spring framework中在解析BeanDefinition模块时用到的ClassPathBeanDefinitionScanner组件以及涉及的一些底层API。&lt;/p>
 &lt;h2 id="前言">前言&lt;/h2>
 &lt;p>在Spring中我们可以通过编程式的方式显示声明定义BeanDefinition：&lt;/p>
 &lt;div class="highlight">&lt;div class="chroma">
@@ -198,42 +57,6 @@
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
 &lt;/div>&lt;p>扫描器根据指定的包路径比如在@ComponentScan注解中指定，通过资源解析器&lt;code>ResourcePatternResolver&lt;/code>扫描该路径下的class文件,最终通过元数据读取器&lt;code>MetadataReader&lt;/code>解析成一个一个的BeanDefinition注册到容器上下文中去，解析时候可以设置相应的规则filter,比如设置哪些class文件不需要解析又有哪些需要。&lt;/p>
-&lt;h3 id="扫描解析入口方法">扫描解析入口方法&lt;/h3>
-&lt;p>Spring上下文容器在扫描时会调用&lt;code>org.springframework.context.annotation.ClassPathBeanDefinitionScanner#scan&lt;/code>进行解析指定包路径下面的候选
-定义，具体Spring是在哪调用该方法进入扫描解析流程的后续再详细分析，本篇专注解析逻辑本身。&lt;/p>
-&lt;div class="highlight">&lt;div class="chroma">
-&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
-&lt;/span>&lt;span class="lnt"> 2
-&lt;/span>&lt;span class="lnt"> 3
-&lt;/span>&lt;span class="lnt"> 4
-&lt;/span>&lt;span class="lnt"> 5
-&lt;/span>&lt;span class="lnt"> 6
-&lt;/span>&lt;span class="lnt"> 7
-&lt;/span>&lt;span class="lnt"> 8
-&lt;/span>&lt;span class="lnt"> 9
-&lt;/span>&lt;span class="lnt">10
-&lt;/span>&lt;span class="lnt">11
-&lt;/span>&lt;span class="lnt">12
-&lt;/span>&lt;span class="lnt">13
-&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
-&lt;td class="lntd">
-&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">scan&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">String&lt;/span>&lt;span class="p">...&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">basePackages&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 获取已经扫描的bean定义个数&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanCountAtScanStart&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">this&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registry&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBeanDefinitionCount&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 开始扫描解析&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">doScan&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">basePackages&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// Register annotation config processors, if necessary.&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">this&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">includeAnnotationConfig&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationConfigUtils&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registerAnnotationConfigProcessors&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">this&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registry&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 计算本次实际扫描解析到的bean定义个数&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="k">this&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">registry&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBeanDefinitionCount&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">beanCountAtScanStart&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
-&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
-&lt;/div>
-&lt;/div>&lt;p>scan方法中并没有核心的解析逻辑，只是计算了下本次解析的BeanDefinition个数，具体的解析逻辑位于doScan(basePackages)方法中。&lt;/p>
 &lt;h2 id="resourceloader">ResourceLoader&lt;/h2>
 &lt;div class="highlight">&lt;div class="chroma">
 &lt;table class="lntable">&lt;tr>&lt;td class="lntd">
@@ -273,10 +96,10 @@
 &lt;/div>
 &lt;/div>&lt;p>Spring中上下文容器AbstractApplicationContext由于继承了&lt;code>DefaultResourceLoader&lt;/code>，DefaultResourceLoader实现了&lt;code>ResourceLoader&lt;/code>，所以可以使用容器上下文应对不同的资源路径获取不同的&lt;code>Resource&lt;/code>。
 而在ClassPathBeanDefinitionScanner内部最终则会使用&lt;code>org.springframework.core.io.support.PathMatchingResourcePatternResolver#getResources&lt;/code>解析包路径下得到文件资源。&lt;/p>
-&lt;p>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver.png"
+&lt;p>&lt;img src="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver.png"
 width="1206"
 height="940"
-srcset="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver_hu386542b298fbc044c28ad75e4cb60ab6_119192_480x0_resize_box_3.png 480w, https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver_hu386542b298fbc044c28ad75e4cb60ab6_119192_1024x0_resize_box_3.png 1024w"
+srcset="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver_hu386542b298fbc044c28ad75e4cb60ab6_119192_480x0_resize_box_3.png 480w, https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/PathMatchingResourcePatternResolver_hu386542b298fbc044c28ad75e4cb60ab6_119192_1024x0_resize_box_3.png 1024w"
 loading="lazy"
 class="gallery-image"
 data-flex-grow="128"
@@ -466,10 +289,10 @@ MetadataReader表示类的元数据读取器，默认实现类为SimpleMetadataR
 &lt;li>而使用了@ComponentScan定义的过滤器最后则会生成&lt;code>org.springframework.core.type.filter.AssignableTypeFilter&lt;/code>类型的过滤器添加到容器中进行过滤匹配&lt;/li>
 &lt;/ul>
 &lt;h3 id="typefilter">TypeFilter&lt;/h3>
-&lt;p>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter.png"
+&lt;p>&lt;img src="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter.png"
 width="1184"
 height="552"
-srcset="https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter_hu9db74f626b5530ad1291b47ac0ec36b3_21505_480x0_resize_box_3.png 480w, https://example.com/p/spring%E6%BA%90%E7%A0%81beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter_hu9db74f626b5530ad1291b47ac0ec36b3_21505_1024x0_resize_box_3.png 1024w"
+srcset="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter_hu9db74f626b5530ad1291b47ac0ec36b3_21505_480x0_resize_box_3.png 480w, https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AbstractTypeHierarchyTraversingFilter_hu9db74f626b5530ad1291b47ac0ec36b3_21505_1024x0_resize_box_3.png 1024w"
 loading="lazy"
 alt="过滤器继承图"
 class="gallery-image"
@@ -581,7 +404,232 @@ data-flex-basis="514px"
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
-&lt;/div>&lt;p>&lt;code>org.springframework.core.type.filter.AssignableTypeFilter#matchClassName&lt;/code>方法比较简单，拿目标类名称与当前资源解析器获取的类名称匹配下，targetType就是在@ComponentScan中注定过滤匹配类型。&lt;/p></description></item><item><title>Spring源码解析前置知识</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</link><pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.png" alt="Featured image of post Spring源码解析前置知识" />&lt;p>主要是介绍spring源码中涉及到的一些常用知识点例如一些API的用法介绍，便于读者在阅读后续Spring主流程源码时熟悉这些API。&lt;/p>
+&lt;/div>&lt;p>&lt;code>org.springframework.core.type.filter.AssignableTypeFilter#matchClassName&lt;/code>方法比较简单，拿目标类名称与当前资源解析器获取的类名称匹配下，targetType就是在@ComponentScan中注定过滤匹配类型。&lt;/p>
+&lt;h2 id="ordercomparator">OrderComparator&lt;/h2>
+&lt;p>Spring在依赖注入时被依赖的的组件有多个时比如依赖一个List时需要对其进行优先级排序后进行注入,那么有哪些方式可以声明优先级顺序呢？可以实现&lt;code>org.springframework.core.PriorityOrdered#getOrder&lt;/code>、实现&lt;code>org.springframework.core.Ordered#getOrder&lt;/code>、或者直接使用&lt;code>org.springframework.core.annotation.Order&lt;/code>注解指定顺序，那么这些方式的执行顺序又是怎样的呢？&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// A实现了PriorityOrdered&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">A&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">implements&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">PriorityOrdered&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nd">@Override&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">getOrder&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">0&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// B实现了Order接口&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">B&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">implements&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Ordered&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nd">@Override&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">getOrder&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">0&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="c1">// C通过注解指定&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nd">@Order&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">0&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">C&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">A&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">A&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">B&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">b&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">B&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">C&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">c&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">C&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">AnnotationAwareOrderComparator&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">comparator&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotationAwareOrderComparator&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">List&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">new&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">ArrayList&lt;/span>&lt;span class="o">&amp;lt;&amp;gt;&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">a&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">b&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">add&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">c&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">sort&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">comparator&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">list&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>A、B、C通过三种不同的方式指定了优先级顺序，执行上述代码最终得到的结果是A-&amp;gt;B-&amp;gt;C。
+&lt;img src="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AnnotationAwareOrderComparator.png"
+width="1010"
+height="506"
+srcset="https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AnnotationAwareOrderComparator_hua8543b8f866014ea54bb891b64aa5b4a_18219_480x0_resize_box_3.png 480w, https://example.com/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/AnnotationAwareOrderComparator_hua8543b8f866014ea54bb891b64aa5b4a_18219_1024x0_resize_box_3.png 1024w"
+loading="lazy"
+alt="AnnotationAwareOrderComparator"
+class="gallery-image"
+data-flex-grow="199"
+data-flex-basis="479px"
+>
+AnnotationAwareOrderComparator比较器的继承图中顶层是java中的Comparator接口，但是AnnotationAwareOrderComparator本身没有实现Comparator，而是在父类&lt;code>org.springframework.core.OrderComparator&lt;/code>中实现了,看下OrderComparator#compare实现：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">org&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">springframework&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">core&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">OrderComparator&lt;/span>&lt;span class="err">#&lt;/span>&lt;span class="n">compare&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">compare&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">o1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">o2&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">doCompare&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">o2&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">private&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">doCompare&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">o1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">o2&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">OrderSourceProvider&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">sourceProvider&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// OrderComparator是升序排序：实现了PriorityOrdered接口最小--&amp;gt;实现了Ordered接口的第二--&amp;gt;没有实现Ordered接口最后，实现了相同接口的按getOrder()返回值进行比较&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 实现了PriorityOrdered接口 &amp;lt; 没有实现PriorityOrdered接口&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kt">boolean&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">p1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">instanceof&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">PriorityOrdered&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kt">boolean&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">p2&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o2&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">instanceof&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">PriorityOrdered&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;amp;&amp;amp;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">p2&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">-&lt;/span>&lt;span class="n">1&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">else&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">p2&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;amp;&amp;amp;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="n">p1&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">1&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 都实现了PriorityOrdered接口就使用getOrder()返回的序值进行比较&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i1&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">getOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">sourceProvider&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i2&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">getOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">o2&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">sourceProvider&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">compare&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">i1&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">i2&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>doCompare方法的判断逻辑其实挺简单明了的。采用相同方式指定优先级顺序的组件那就看具体的order数值，谁小就谁优先级高；如果组件之间采用了不同的方式指定，那么使用了PriorityOrdered这种方式的实现的组件具有最高优先级。&lt;/p>
+&lt;ul>
+&lt;li>第11-18行：三种优先级指定方式中，实现了PriorityOrdered接口的组件拥有最高的优先级。&lt;/li>
+&lt;li>第21-23行：如果都实现了PriorityOrdered接口或者使用了另外两种方式指定则使用getOrder方法返回的优先级判断&lt;/li>
+&lt;/ul>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="n">org&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">springframework&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">core&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">OrderComparator&lt;/span>&lt;span class="err">#&lt;/span>&lt;span class="n">getOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">java&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">lang&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">Object&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">protected&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">int&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">getOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nd">@Nullable&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">!=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">findOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">!=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Ordered&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">LOWEST_PRECEDENCE&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">protected&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">findOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">instanceof&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Ordered&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">?&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="n">Ordered&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="na">getOrder&lt;/span>&lt;span class="p">()&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在OrderComparator#getOrder中调用了findOrder方法获取优先级顺序。findOrder方法的默认实现是当前组件实现了Ordered接口则直接获取getOrder的值，否则返回空。findOrder使用protected，具体的实现还是在子类AnnotationAwareOrderComparator中：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">protected&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">findOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 先获取Ordered接口中getOrder()方法返回的数值&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">super&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">findOrder&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">!=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 如果没有实现Ordered接口，则获取@Order注解中指定的值&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">findOrderFromAnnotation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">private&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">findOrderFromAnnotation&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">Object&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotatedElement&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">element&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">instanceof&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">AnnotatedElement&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">?&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">AnnotatedElement&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">:&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getClass&lt;/span>&lt;span class="p">());&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">MergedAnnotations&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">annotations&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">MergedAnnotations&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">from&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">element&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">SearchStrategy&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">TYPE_HIERARCHY&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">Integer&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">OrderUtils&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getOrderFromAnnotations&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">element&lt;/span>&lt;span class="p">,&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">annotations&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">if&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">==&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">&amp;amp;&amp;amp;&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="k">instanceof&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">DecoratingProxy&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">findOrderFromAnnotation&lt;/span>&lt;span class="p">(((&lt;/span>&lt;span class="n">DecoratingProxy&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">obj&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="na">getDecoratedClass&lt;/span>&lt;span class="p">());&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">order&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>AnnotationAwareOrderComparator#findOrder调用父类findOrder尝试获取接口上getOrder的值，使用了PriorityOrdered、Ordered方式此处就返回了，如果使用了@Order则进一步通过findOrderFromAnnotation获取注解的优先级值。&lt;/p></description></item><item><title>Spring源码解析前置知识</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</link><pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.png" alt="Featured image of post Spring源码解析前置知识" />&lt;p>主要是介绍spring源码中涉及到的一些常用知识点例如一些API的用法介绍，便于读者在阅读后续Spring主流程源码时熟悉这些API。&lt;/p>
 &lt;h2 id="beandefinition">BeanDefinition&lt;/h2>
 &lt;p>&lt;code>BeanDefinition&lt;/code>表示Bean定义，&lt;code>BeanDefinition&lt;/code>中存在很多属性用来描述一个Bean的特点。比如：&lt;/p>
 &lt;ul>
