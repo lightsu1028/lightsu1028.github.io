@@ -1090,7 +1090,51 @@ AnnotationAwareOrderComparator比较器的继承图中顶层是java中的Compara
 &lt;li>如果条件注解指定具体的作用阶段，只有当条件注解的实际作用阶段跟期望作用阶段一致，且matches返回false才认为候选组件不生效，其他情况候选组件都生效。&lt;/li>
 &lt;/ul>
 &lt;/li>
-&lt;/ul></description></item><item><title>Spring源码解析前置知识</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</link><pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.png" alt="Featured image of post Spring源码解析前置知识" />&lt;p>主要是介绍spring源码中涉及到的一些常用知识点例如一些API的用法介绍，便于读者在阅读后续Spring主流程源码时熟悉这些API。&lt;/p>
+&lt;/ul>
+&lt;h2 id="lookup注解">Lookup注解&lt;/h2>
+&lt;p>在Spring框架中，@Lookup注解用于告诉Spring容器，每次调用被注解的方法时，都应该返回一个新的实例。通常情况下，Spring会在容器启动时实例化bean，并将其缓存起来供需要时使用。但是对于使用@Lookup注解标记的方法，Spring在运行时会生成一个动态的代理类来处理方法调用，并且会在每次方法调用时动态创建新的实例，而不是使用缓存的实例。&lt;/p>
+&lt;p>这种动态生成新实例的方式对于一些特定的情况非常有用，比如创建原型（prototype）作用域的bean，并且希望每次注入该bean时都获取一个新的实例。通过在一个方法上添加@Lookup注解，Spring可以提供这样的功能，而无需手动编写复杂的代码来管理实例的创建和生命周期。下面举个例子说明下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">abstract&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">UserService&lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kt">void&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">test&lt;/span>&lt;span class="p">(){&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">System&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">out&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">println&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">getOrderService&lt;/span>&lt;span class="p">());&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="nd">@Lookup&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;orderService&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">OrderService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="nf">getOrderService&lt;/span>&lt;span class="p">(){&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="k">return&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kc">null&lt;/span>&lt;span class="p">;&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nd">@Component&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="nd">@Scope&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;prototype&amp;#34;&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">OrderService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>UserService是抽象类，抽象类本身是不会被Spring实例化的。但是UserService的getOrderService方法使用了@Lookup注解，这样Spring就会实例化UserService，getOrderService方法每次被调用时都会去容器中寻找orderService的实例，由于orderService是多例，所以每次调用test方法都会返回OrderService的实例对象。&lt;/p></description></item><item><title>Spring源码解析前置知识</title><link>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</link><pubDate>Wed, 11 Jan 2023 00:00:00 +0000</pubDate><guid>https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/</guid><description>&lt;img src="https://example.com/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.png" alt="Featured image of post Spring源码解析前置知识" />&lt;p>主要是介绍spring源码中涉及到的一些常用知识点例如一些API的用法介绍，便于读者在阅读后续Spring主流程源码时熟悉这些API。&lt;/p>
 &lt;h2 id="beandefinition">BeanDefinition&lt;/h2>
 &lt;p>&lt;code>BeanDefinition&lt;/code>表示Bean定义，&lt;code>BeanDefinition&lt;/code>中存在很多属性用来描述一个Bean的特点。比如：&lt;/p>
 &lt;ul>
