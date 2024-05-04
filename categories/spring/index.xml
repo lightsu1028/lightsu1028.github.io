@@ -619,7 +619,7 @@ data-flex-basis="514px"
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
 &lt;/div>&lt;p>&lt;code>org.springframework.core.type.filter.AssignableTypeFilter#matchClassName&lt;/code>方法比较简单，拿目标类名称与当前资源解析器获取的类名称匹配下，targetType就是在@ComponentScan中注定过滤匹配类型。&lt;/p>
-&lt;h2 id="ordercomparator">OrderComparator&lt;/h2>
+&lt;h2 id="OrderComparator">OrderComparator&lt;/h2>
 &lt;p>Spring在依赖注入时被依赖的的组件有多个时比如依赖一个List时需要对其进行优先级排序后进行注入,那么有哪些方式可以声明优先级顺序呢？可以实现&lt;code>org.springframework.core.PriorityOrdered#getOrder&lt;/code>、实现&lt;code>org.springframework.core.Ordered#getOrder&lt;/code>、或者直接使用&lt;code>org.springframework.core.annotation.Order&lt;/code>注解指定顺序，那么这些方式的执行顺序又是怎样的呢？&lt;/p>
 &lt;div class="highlight">&lt;div class="chroma">
 &lt;table class="lntable">&lt;tr>&lt;td class="lntd">
