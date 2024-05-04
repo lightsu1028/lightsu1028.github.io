@@ -1,0 +1,744 @@
+<!doctype html><html lang=zh-cn dir=ltr><head><meta charset=utf-8><meta name=viewport content='width=device-width,initial-scale=1'><meta name=description content='Spring BeanDefinition模块BeanFactoryPostProcessor源码解析'><title>Spring BeanFactoryPostProcessor</title>
+<link rel=canonical href=https://example.com/p/spring-beanfactorypostprocessor/><link rel=stylesheet href=/scss/style.min.d26d9af882ada712de1896a969c56b0670017ad583ad61f5749c6bea19b57798.css><meta property='og:title' content='Spring BeanFactoryPostProcessor'><meta property='og:description' content='Spring BeanDefinition模块BeanFactoryPostProcessor源码解析'><meta property='og:url' content='https://example.com/p/spring-beanfactorypostprocessor/'><meta property='og:site_name' content="lightsu's blog"><meta property='og:type' content='article'><meta property='article:section' content='Post'><meta property='article:tag' content='Spring'><meta property='article:tag' content='BeanDefinition'><meta property='article:tag' content='BeanFactoryPostProcessor'><meta property='article:published_time' content='2024-04-08T00:00:00+00:00'><meta property='article:modified_time' content='2024-04-08T00:00:00+00:00'><meta property='og:image' content='https://example.com/p/spring-beanfactorypostprocessor/bfbakground.png'><meta name=twitter:title content="Spring BeanFactoryPostProcessor"><meta name=twitter:description content="Spring BeanDefinition模块BeanFactoryPostProcessor源码解析"><meta name=twitter:card content="summary_large_image"><meta name=twitter:image content='https://example.com/p/spring-beanfactorypostprocessor/bfbakground.png'><link rel="shortcut icon" href=/favicon.ico></head><body class=article-page><script>(function(){const e="StackColorScheme";localStorage.getItem(e)||localStorage.setItem(e,"auto")})()</script><script>(function(){const t="StackColorScheme",e=localStorage.getItem(t),n=window.matchMedia("(prefers-color-scheme: dark)").matches===!0;e=="dark"||e==="auto"&&n?document.documentElement.dataset.scheme="dark":document.documentElement.dataset.scheme="light"})()</script><div class="container main-container flex on-phone--column extended"><div id=article-toolbar style=position:sticky;top:5px;z-index:1000><a href=/ class=back-home><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><polyline points="15 6 9 12 15 18"/></svg>
+<span>返回</span></a></div><aside class="sidebar right-sidebar sticky"><section class="widget archives"><div class=widget-icon><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-hash" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><line x1="5" y1="9" x2="19" y2="9"/><line x1="5" y1="15" x2="19" y2="15"/><line x1="11" y1="4" x2="7" y2="20"/><line x1="17" y1="4" x2="13" y2="20"/></svg></div><h2 class="widget-title section-title">目录</h2><div class=widget--toc><nav id=TableOfContents><ol><li><a href=#beanfactorypostprocessor是什么>BeanFactoryPostProcessor是什么？</a><ol><li><a href=#如何使用>如何使用</a></li></ol></li><li><a href=#beandefinitionregistrypostprocessor是什么>BeanDefinitionRegistryPostProcessor是什么？</a><ol><li><a href=#如何使用-1>如何使用</a></li></ol></li><li><a href=#spring内部实现>Spring内部实现</a><ol><li><a href=#beanfactorypostprocessor实现>BeanFactoryPostProcessor实现</a></li><li><a href=#beandefinitionregistrypostprocessor实现>BeanDefinitionRegistryPostProcessor实现</a></li></ol></li><li><a href=#spring在何时调用beanfactorypostprocessor和beandefinitionregistrypostprocessor>Spring在何时调用BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor？</a><ol><li><a href=#beanfactorypostprocessor创建准备>BeanFactoryPostProcessor创建准备</a></li><li><a href=#beanfactorypostprocessor调用编排>BeanFactoryPostProcessor调用编排</a></li></ol></li></ol></nav></div></section></aside><main class="main full-width"><article class="has-image main-article"><header class=article-header><div class=article-image><a href=/p/spring-beanfactorypostprocessor/><img src=/p/spring-beanfactorypostprocessor/bfbakground_hu96d90dc5f8b15514dce117f010950681_232349_800x0_resize_box_3.png srcset="/p/spring-beanfactorypostprocessor/bfbakground_hu96d90dc5f8b15514dce117f010950681_232349_800x0_resize_box_3.png 800w, /p/spring-beanfactorypostprocessor/bfbakground_hu96d90dc5f8b15514dce117f010950681_232349_1600x0_resize_box_3.png 1600w" width=800 height=495 loading=lazy alt="Featured image of post Spring BeanFactoryPostProcessor"></a></div><div class=article-details><header class=article-category><a href=/categories/spring/>Spring</a></header><div class=article-title-wrapper><h2 class=article-title><a href=/p/spring-beanfactorypostprocessor/>Spring BeanFactoryPostProcessor</a></h2><h3 class=article-subtitle>Spring BeanDefinition模块BeanFactoryPostProcessor源码解析</h3></div><footer class=article-time><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-calendar-time" width="56" height="56" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><path d="M11.795 21H5a2 2 0 01-2-2V7a2 2 0 012-2h12a2 2 0 012 2v4"/><circle cx="18" cy="18" r="4"/><path d="M15 3v4"/><path d="M7 3v4"/><path d="M3 11h16"/><path d="M18 16.496V18l1 1"/></svg>
+<time class=article-time--published>2024/04/08</time></div><div><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-clock" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>
+<time class=article-time--reading>阅读时长: 21 分钟</time></div></footer></div></header><section class=article-content><p>本篇文章主要是介绍Spring在生成BeanDefinition的过程中，涉及到的扩展接口BeanFactoryPostProcessor以及子接口BeanDefinitionRegistryPostProcessor的介绍、作用以及Spring内部的一些既有实现。</p><h2 id=beanfactorypostprocessor是什么>BeanFactoryPostProcessor是什么？</h2><blockquote><p>用于对beanFactory进行回调处理，允许用户对应用上下文中的bean定义进行自定义修改，主要通过底层容器beanFactory对bean属性值进行适配处理。
+比如通过用户自定义的外部属性配置文件（主要是.properties）在程序运行时动态的更改Spring容器中bean的属性值，从而提供了一种在配置文件之外修改 bean 属性的机制。
+PropertyResourceConfigurer抽象类就是一个开箱即用的既有实现。</p></blockquote><p>上述官方文档中的说明指明了2件事：</p><ul><li>BeanFactoryPostProcessor提供了一种对beanFactory进行回调处理的机制，作为SPI扩展点</li><li>通过对beanFactory回调，可以在程序运行时动态处理bean属性值，比如替换被@Value修饰的属性占位符
+看下BeanFactoryPostProcessor的接口定义：</li></ul><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span><span class=lnt>7
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=n>org</span><span class=p>.</span><span class=na>springframework</span><span class=p>.</span><span class=na>beans</span><span class=p>.</span><span class=na>factory</span><span class=p>.</span><span class=na>config</span><span class=p>.</span><span class=na>BeanFactoryPostProcessor</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=kd>interface</span> <span class=nc>BeanFactoryPostProcessor</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kt>void</span><span class=w> </span><span class=nf>postProcessBeanFactory</span><span class=p>(</span><span class=n>ConfigurableListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>BeansException</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>BeanFactoryPostProcessor接口中只有一个定义的方法，入参是ConfigurableListableBeanFactory，通过beanFactory就可以获取指定的beanDefinition，进而修改beanDefinition。BeanFactoryPostProcessor作用的时机应该是所有的bean定义已经被加载了但是还没实例化，此时可以修改属性。<span style=font-weight:700;font-size:larger>注意</span>：<span style=color:red;font-style:italic>ConfigurableListableBeanFactory只具备查询beanDefinition的能力，并不能对beanDefinition增删即进行注册。</span></p><h3 id=如何使用>如何使用</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=w>    </span><span class=nd>@Component</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>User</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>private</span><span class=w> </span><span class=n>String</span><span class=w> </span><span class=n>name</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;test001&#34;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w>  </span><span class=n>Integer</span><span class=w> </span><span class=n>salary</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 省略get set方法</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>...</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nd>@Component</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>SalaryBeanFactoryPostProcessor</span><span class=w> </span><span class=kd>implements</span><span class=w> </span><span class=n>BeanFactoryPostProcessor</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=nd>@Override</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>postProcessBeanFactory</span><span class=p>(</span><span class=n>ConfigurableListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>BeansException</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// 获取user的bean定义</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>BeanDefinition</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBeanDefinition</span><span class=p>(</span><span class=s>&#34;user&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// 获取user bean定义的属性</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>MutablePropertyValues</span><span class=w> </span><span class=n>propertyValues</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>user</span><span class=p>.</span><span class=na>getPropertyValues</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// 对user的属性salary赋值</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>propertyValues</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=s>&#34;salary&#34;</span><span class=p>,</span><span class=w> </span><span class=n>1000</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 创建一个Spring容器</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>AnnotationConfigApplicationContext</span><span class=w> </span><span class=n>applicationContext</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>AnnotationConfigApplicationContext</span><span class=p>(</span><span class=n>AppConfig</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>User</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>(</span><span class=n>User</span><span class=p>)</span><span class=w> </span><span class=n>applicationContext</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=s>&#34;user&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>user</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>程序中定义了User用户对象并通过@Component声明为bean，用户对象有个属性salary，现在要对所有用户bean的salary属性统一赋默认值1000。我们就可以使用自定义的SalaryBeanFactoryPostProcessor组件在postProcessBeanFactory方法中进行属性的统一赋值。</p><h2 id=beandefinitionregistrypostprocessor是什么>BeanDefinitionRegistryPostProcessor是什么？</h2><blockquote><p>BeanFactoryPostProcessor的SPI扩展，在BeanFactoryPostProcessor开始作用前允许注册beanDefinition。Spring内部提供了相应实现<code>org.springframework.context.annotation.ConfigurationClassPostProcessor</code>。</p></blockquote><p>BeanDefinitionRegistryPostProcessor看名字就知道应该是跟bean定义的注册相关的后置处理器。由于BeanFactoryPostProcessor只支持bean定义属性的修改而不支持bean定义的注册，所以相关实现就由BeanDefinitionRegistryPostProcessor接口定义，算是对BeanFactoryPostProcessor的补充。惯例看下相关接口的定义：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>1
+</span><span class=lnt>2
+</span><span class=lnt>3
+</span><span class=lnt>4
+</span><span class=lnt>5
+</span><span class=lnt>6
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=n>org</span><span class=p>.</span><span class=na>springframework</span><span class=p>.</span><span class=na>beans</span><span class=p>.</span><span class=na>factory</span><span class=p>.</span><span class=na>support</span><span class=p>.</span><span class=na>BeanDefinitionRegistryPostProcessor</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=kd>interface</span> <span class=nc>BeanDefinitionRegistryPostProcessor</span><span class=w> </span><span class=kd>extends</span><span class=w> </span><span class=n>BeanFactoryPostProcessor</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kt>void</span><span class=w> </span><span class=nf>postProcessBeanDefinitionRegistry</span><span class=p>(</span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>BeansException</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p><code>postProcessBeanDefinitionRegistry</code>方法的入参为BeanDefinitionRegistry，BeanDefinitionRegistry可以对bean定义进行注册、删除、查询。跟BeanFactoryPostProcessor的作用时机一样也是在所有bean定义被加载还未被实例化之前，而且会比<code>BeanFactoryPostProcessor#postProcessBeanFactory</code>优先作用。</p><h3 id=如何使用-1>如何使用</h3><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>User</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>private</span><span class=w> </span><span class=n>String</span><span class=w> </span><span class=n>name</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=s>&#34;test001&#34;</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w>  </span><span class=n>Integer</span><span class=w> </span><span class=n>salary</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=nd>@Component</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=kd>class</span> <span class=nc>AddUserBeanDefinitionRegistryPostProcessor</span><span class=w> </span><span class=kd>implements</span><span class=w> </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nd>@Override</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>postProcessBeanFactory</span><span class=p>(</span><span class=n>ConfigurableListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>BeansException</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=nd>@Override</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>public</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>postProcessBeanDefinitionRegistry</span><span class=p>(</span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=p>)</span><span class=w> </span><span class=kd>throws</span><span class=w> </span><span class=n>BeansException</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 创建User bean定义</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>userBeanDefinition</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>User</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 设置属性</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>MutablePropertyValues</span><span class=w> </span><span class=n>propertyValues</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>userBeanDefinition</span><span class=p>.</span><span class=na>getPropertyValues</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>propertyValues</span><span class=p>.</span><span class=na>addPropertyValue</span><span class=p>(</span><span class=s>&#34;name&#34;</span><span class=p>,</span><span class=w> </span><span class=s>&#34;test002&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>propertyValues</span><span class=p>.</span><span class=na>addPropertyValue</span><span class=p>(</span><span class=s>&#34;salary&#34;</span><span class=p>,</span><span class=w> </span><span class=n>1000</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 注册bean定义</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>registry</span><span class=p>.</span><span class=na>registerBeanDefinition</span><span class=p>(</span><span class=s>&#34;user&#34;</span><span class=p>,</span><span class=w> </span><span class=n>userBeanDefinition</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>main</span><span class=p>(</span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>args</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 创建一个Spring容器</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>AnnotationConfigApplicationContext</span><span class=w> </span><span class=n>applicationContext</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>AnnotationConfigApplicationContext</span><span class=p>(</span><span class=n>AppConfig</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>User</span><span class=w> </span><span class=n>user</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>(</span><span class=n>User</span><span class=p>)</span><span class=w> </span><span class=n>applicationContext</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=s>&#34;user&#34;</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>System</span><span class=p>.</span><span class=na>out</span><span class=p>.</span><span class=na>println</span><span class=p>(</span><span class=n>user</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=cm>/*UserService userService = (UserService) applicationContext.getBean(&#34;user&#34;);
+</span></span></span><span class=line><span class=cl><span class=cm>    userService.test();*/</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>自定义AddUserBeanDefinitionRegistryPostProcessor实现了BeanDefinitionRegistryPostProcessor接口，在<code>postProcessBeanDefinitionRegistry</code>方法中手动编程式的创建了User类的bean定义并进行了属性的赋值，最后调用BeanDefinitionRegistry注册到容器中去。最后使用applicationContext通过beanName可以获取到User类型的bean。</p><h2 id=spring内部实现>Spring内部实现</h2><h3 id=beanfactorypostprocessor实现>BeanFactoryPostProcessor实现</h3><p><img src=/p/spring-beanfactorypostprocessor/BeanFactoryPostProcessor.png width=4766 height=916 srcset="/p/spring-beanfactorypostprocessor/BeanFactoryPostProcessor_hubaf509ad1e7a210827965302ac6b412b_66310_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/BeanFactoryPostProcessor_hubaf509ad1e7a210827965302ac6b412b_66310_1024x0_resize_box_3.png 1024w" loading=lazy alt=BeanFactoryPostProcessor class=gallery-image data-flex-grow=520 data-flex-basis=1248px></p><ul><li>PropertyResourceConfigurer：主要进行属性值的替换，包括了子类PropertyOverrideConfigurer在外部属性文件.properties中通过beanName.property=value这种kv的形式定义需要覆盖的bean属性达到替换bean属性值的目的；PlaceholderConfigurerSupport用于从外部配置中读取属性文件中的占位符定义（${&mldr;}），并在容器启动时将其替换为实际的值。</li><li>ConfigurationClassPostProcessor: // TODO</li><li>EventListenerMethodProcessor：用于处理Spring应用程序上下文中的事件监听方法。主要作用是扫描Spring容器中的Bean，查找其中标注了事件监听注解（<code>@EventListener</code>）的方法，并将其注册为事件监听器。当事件发生时，Spring将会调用这些注册的事件监听方法。</li><li>CustomScopeConfigurer：于配置自定义的作用域（Scope）。</li><li>AspectJWeavingEnabler：用于启用AspectJ编织（weaving）功能。</li><li>CustomAutowireConfigurer ：用于配置自定义的自动装配规则</li><li>CustomEditorConfigurer ：用于配置自定义的属性编辑器（PropertyEditor）。属性编辑器用于将字符串值转换为特定类型的对象，或将对象转换为字符串值。配置了自定义属性编辑器，Spring就会在容器启动时注册自定义的属性编辑器，从而影响属性值的转换行为。这样，在进行属性注入时，Spring 将会使用注册的自定义属性编辑器来进行类型转换。</li></ul><h3 id=beandefinitionregistrypostprocessor实现>BeanDefinitionRegistryPostProcessor实现</h3><p><img src=/p/spring-beanfactorypostprocessor/BeanDefinitionRegistryPostProcessor.png width=688 height=668 srcset="/p/spring-beanfactorypostprocessor/BeanDefinitionRegistryPostProcessor_hua7b94618b7d27e44432c62b9de90efba_15201_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/BeanDefinitionRegistryPostProcessor_hua7b94618b7d27e44432c62b9de90efba_15201_1024x0_resize_box_3.png 1024w" loading=lazy alt=BeanDefinitionRegistryPostProcessor class=gallery-image data-flex-grow=102 data-flex-basis=247px><br>    BeanDefinitionRegistryPostProcessor在Spring内部的实现只有ConfigurationClassPostProcessor，同时ConfigurationClassPostProcessor还继承了BeanFactoryPostProcessor接口。<br>    ConfigurationClassPostProcessor实现BeanDefinitionRegistryPostProcessor，主要进行解析配置类，通过配置类进一步解析得到所有的bean定义，扫描含有@ComponentScan、 @Import、@ImportResource、@Bean、@PropertySource等注解的bean定义。可以说<code>ConfigurationClassPostProcessor#postProcessBeanDefinitionRegistry</code>非常重要，bean定义的扫描解析的入口就是在这了。</p><h2 id=spring在何时调用beanfactorypostprocessor和beandefinitionregistrypostprocessor>Spring在何时调用BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor？</h2><p>    上面介绍了这两个接口是干什么的以及内部的一些既有实现。那么还有最后一个问题，就是Spring是在何时使用这些SPI接口的呢？或者说在上下文容器的生命周期的哪个环节起作用的呢？并且这两个接口都是跟beanDefinition是相关的，那么他们的先后作用顺序又是怎样的呢？<br>    由于这两个接口的实现比较多，本篇文章选取ConfigurationClassPostProcessor这个共有的实现类作为源码分析对象，因为ConfigurationClassPostProcessor也是后续bean定义扫描解析的入口。</p><p><img src=/p/spring-beanfactorypostprocessor/bff1.png width=4766 height=1345 srcset="/p/spring-beanfactorypostprocessor/bff1_hu38d3a135ccbd6e39190dd4a3168d8e50_211327_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/bff1_hu38d3a135ccbd6e39190dd4a3168d8e50_211327_1024x0_resize_box_3.png 1024w" loading=lazy alt=BeanFactoryPostProcessor生命周期 class=gallery-image data-flex-grow=354 data-flex-basis=850px></p><p>    上面是ConfigurationClassPostProcessor从创建到使用的整个流程。大致可以分为三个阶段，青色部分为容器上下文为创建ConfigurationClassPostProcessor的准备阶段，此阶段主要是预先注册ConfigurationClassPostProcessor的bean定义以及准备后续会使用到的BeanFactory；蓝色部分为一阶段注册的BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor的实例化以及编排调用；三阶段就是具体的postProcessBeanDefinitionRegistry的执行，此处选取了ConfigurationClassPostProcessor，主要就是进行各种BeanDefinition的解析了。</p><h3 id=beanfactorypostprocessor创建准备>BeanFactoryPostProcessor创建准备</h3><p>    在Spring中，万物都是Bean，用户创建的自定义类是bean，Spring基础组件也是bean。既然是bean，那么都会经过IOC被创建后使用，也就会需要进行相应的BeanDefinition注册。</p><ol><li>对于像BeanFactoryPostProcessor这种基础组件，Spring会在容器上下文初始化时预先编程式注册对应的bean定义。</li><li>BeanFactoryPostProcessor和BeanDefinitionRegistryPostProcessor的两个方法中需要用到<code>BeanFactory</code>和<code>BeanDefinitionRegistry</code>，所以在初始化时也就需要创建相应的组件供其后续使用。</li></ol><p>    上述两个步骤是在哪里实现的呢？看一下容器上下文<code>AnnotationConfigApplicationContext</code>的构造函数源码便可知。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=n>org</span><span class=p>.</span><span class=na>springframework</span><span class=p>.</span><span class=na>context</span><span class=p>.</span><span class=na>support</span><span class=p>.</span><span class=na>GenericApplicationContext</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// 父类GenericApplicationContext无参构造函数</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>GenericApplicationContext</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>beanFactory</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>DefaultListableBeanFactory</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>org</span><span class=p>.</span><span class=na>springframework</span><span class=p>.</span><span class=na>context</span><span class=p>.</span><span class=na>annotation</span><span class=p>.</span><span class=na>AnnotationConfigApplicationContext</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// 无参构造函数</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotationConfigApplicationContext</span><span class=p>()</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 额外会创建StandardEnvironment</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>reader</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>AnnotatedBeanDefinitionReader</span><span class=p>(</span><span class=k>this</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>createAnnotatedBeanDefReader</span><span class=p>.</span><span class=na>end</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>scanner</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ClassPathBeanDefinitionScanner</span><span class=p>(</span><span class=k>this</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// 使用自定义的BeanFactory初始化AnnotationConfigApplicationContext</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotationConfigApplicationContext</span><span class=p>(</span><span class=n>DefaultListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 调用父类GenericApplicationContext的有参构造函数初始化beanFactory</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=kd>super</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>reader</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>AnnotatedBeanDefinitionReader</span><span class=p>(</span><span class=k>this</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>scanner</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ClassPathBeanDefinitionScanner</span><span class=p>(</span><span class=k>this</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// 使用自定义组件类即组件配置类（含有@Configuration注解的类、含有@ComponentScan的类）初始化</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotationConfigApplicationContext</span><span class=p>(</span><span class=n>Class</span><span class=o>&lt;?&gt;</span><span class=p>...</span><span class=w> </span><span class=n>componentClasses</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 调用无参构造函数</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 构造DefaultListableBeanFactory、AnnotatedBeanDefinitionReader、ClassPathBeanDefinitionScanner</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册组件类即注册配置类</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>register</span><span class=p>(</span><span class=n>componentClasses</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 刷新容器</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>refresh</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=c1>// 使用类路径（路径下用户自定义bean）初始化</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotationConfigApplicationContext</span><span class=p>(</span><span class=n>String</span><span class=p>...</span><span class=w> </span><span class=n>basePackages</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>scan</span><span class=p>(</span><span class=n>basePackages</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>refresh</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>    可以看到AnnotationConfigApplicationContext的构造函数有很多，有参数的可以使用自定义<code>BeanFactory</code>、自定义的配置类、直接指定要扫描的类路径。但是这些构造函数中都会直接或间接的创建<code>AnnotatedBeanDefinitionReader</code>、<code>ClassPathBeanDefinitionScanner</code>，还有一个隐性的操作就是重载<code>AnnotationConfigApplicationContext</code>无参构造函数初始化的同时也会调用父类<code>GenericApplicationContext</code>的无参构造函数创建一个<code>DefaultListableBeanFactory</code>的beanFactory。这个DefaultListableBeanFactory是干什么用的？</p><p><img src=/p/spring-beanfactorypostprocessor/DefaultListableBeanFactory.png width=2390 height=948 srcset="/p/spring-beanfactorypostprocessor/DefaultListableBeanFactory_hu4f839e77b0a6ce6b4d6a7816ada0756a_66641_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/DefaultListableBeanFactory_hu4f839e77b0a6ce6b4d6a7816ada0756a_66641_1024x0_resize_box_3.png 1024w" loading=lazy alt=DefaultListableBeanFactory继承图 class=gallery-image data-flex-grow=252 data-flex-basis=605px>
+    DefaultListableBeanFactory的顶层接口有<code>BeanFactory</code>和<code>BeanDefinitionRegistry</code>，这就是后续<code>BeanFactoryPostProcessor</code>和<code>BeanDefinitionRegistryPostProcessor</code>接口方法中需要用到的组件，在<code>GenericApplicationContext</code>的无参构造函数中进行了初始化创建。
+继续深入分析<code>AnnotatedBeanDefinitionReader</code>的源码：</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt> 1
+</span><span class=lnt> 2
+</span><span class=lnt> 3
+</span><span class=lnt> 4
+</span><span class=lnt> 5
+</span><span class=lnt> 6
+</span><span class=lnt> 7
+</span><span class=lnt> 8
+</span><span class=lnt> 9
+</span><span class=lnt>10
+</span><span class=lnt>11
+</span><span class=lnt>12
+</span><span class=lnt>13
+</span><span class=lnt>14
+</span><span class=lnt>15
+</span><span class=lnt>16
+</span><span class=lnt>17
+</span><span class=lnt>18
+</span><span class=lnt>19
+</span><span class=lnt>20
+</span><span class=lnt>21
+</span><span class=lnt>22
+</span><span class=lnt>23
+</span><span class=lnt>24
+</span><span class=lnt>25
+</span><span class=lnt>26
+</span><span class=lnt>27
+</span><span class=lnt>28
+</span><span class=lnt>29
+</span><span class=lnt>30
+</span><span class=lnt>31
+</span><span class=lnt>32
+</span><span class=lnt>33
+</span><span class=lnt>34
+</span><span class=lnt>35
+</span><span class=lnt>36
+</span><span class=lnt>37
+</span><span class=lnt>38
+</span><span class=lnt>39
+</span><span class=lnt>40
+</span><span class=lnt>41
+</span><span class=lnt>42
+</span><span class=lnt>43
+</span><span class=lnt>44
+</span><span class=lnt>45
+</span><span class=lnt>46
+</span><span class=lnt>47
+</span><span class=lnt>48
+</span><span class=lnt>49
+</span><span class=lnt>50
+</span><span class=lnt>51
+</span><span class=lnt>52
+</span><span class=lnt>53
+</span><span class=lnt>54
+</span><span class=lnt>55
+</span><span class=lnt>56
+</span><span class=lnt>57
+</span><span class=lnt>58
+</span><span class=lnt>59
+</span><span class=lnt>60
+</span><span class=lnt>61
+</span><span class=lnt>62
+</span><span class=lnt>63
+</span><span class=lnt>64
+</span><span class=lnt>65
+</span><span class=lnt>66
+</span><span class=lnt>67
+</span><span class=lnt>68
+</span><span class=lnt>69
+</span><span class=lnt>70
+</span><span class=lnt>71
+</span><span class=lnt>72
+</span><span class=lnt>73
+</span><span class=lnt>74
+</span><span class=lnt>75
+</span><span class=lnt>76
+</span><span class=lnt>77
+</span><span class=lnt>78
+</span><span class=lnt>79
+</span><span class=lnt>80
+</span><span class=lnt>81
+</span><span class=lnt>82
+</span><span class=lnt>83
+</span><span class=lnt>84
+</span><span class=lnt>85
+</span><span class=lnt>86
+</span><span class=lnt>87
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=c1>// 使用AnnotationConfigApplicationContext作为registry传入</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotatedBeanDefinitionReader</span><span class=p>(</span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>getOrCreateEnvironment</span><span class=p>(</span><span class=n>registry</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=nf>AnnotatedBeanDefinitionReader</span><span class=p>(</span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>Environment</span><span class=w> </span><span class=n>environment</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>   
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>registry</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>registry</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 用来解析@Conditional注解的</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>this</span><span class=p>.</span><span class=na>conditionEvaluator</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ConditionEvaluator</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>environment</span><span class=p>,</span><span class=w> </span><span class=kc>null</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 使用registry注册所有注解相关的后置处理器bean定义</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>AnnotationConfigUtils</span><span class=p>.</span><span class=na>registerAnnotationConfigProcessors</span><span class=p>(</span><span class=k>this</span><span class=p>.</span><span class=na>registry</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=n>org</span><span class=p>.</span><span class=na>springframework</span><span class=p>.</span><span class=na>context</span><span class=p>.</span><span class=na>annotation</span><span class=p>.</span><span class=na>AnnotationConfigUtils</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=n>Set</span><span class=o>&lt;</span><span class=n>BeanDefinitionHolder</span><span class=o>&gt;</span><span class=w> </span><span class=nf>registerAnnotationConfigProcessors</span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>			</span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=nd>@Nullable</span><span class=w> </span><span class=n>Object</span><span class=w> </span><span class=n>source</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>DefaultListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>unwrapDefaultListableBeanFactory</span><span class=p>(</span><span class=n>registry</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>beanFactory</span><span class=w> </span><span class=o>!=</span><span class=w> </span><span class=kc>null</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 设置beanFactory的OrderComparator为AnnotationAwareOrderComparator</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 它是一个Comparator，是一个比较器，可以用来进行排序，比如new ArrayList&lt;&gt;().sort(Comparator);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getDependencyComparator</span><span class=p>()</span><span class=w> </span><span class=k>instanceof</span><span class=w> </span><span class=n>AnnotationAwareOrderComparator</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>setDependencyComparator</span><span class=p>(</span><span class=n>AnnotationAwareOrderComparator</span><span class=p>.</span><span class=na>INSTANCE</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 用来判断某个Bean能不能用来进行依赖注入</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getAutowireCandidateResolver</span><span class=p>()</span><span class=w> </span><span class=k>instanceof</span><span class=w> </span><span class=n>ContextAnnotationAutowireCandidateResolver</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>setAutowireCandidateResolver</span><span class=p>(</span><span class=k>new</span><span class=w> </span><span class=n>ContextAnnotationAutowireCandidateResolver</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Set</span><span class=o>&lt;</span><span class=n>BeanDefinitionHolder</span><span class=o>&gt;</span><span class=w> </span><span class=n>beanDefs</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>LinkedHashSet</span><span class=o>&lt;&gt;</span><span class=p>(</span><span class=n>8</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册ConfigurationClassPostProcessor类型的BeanDefinition</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>ConfigurationClassPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>CONFIGURATION_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册AutowiredAnnotationBeanPostProcessor类型的BeanDefinition</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>AutowiredAnnotationBeanPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>AUTOWIRED_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册CommonAnnotationBeanPostProcessor类型的BeanDefinition</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>jsr250Present</span><span class=w> </span><span class=o>&amp;&amp;</span><span class=w> </span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>COMMON_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>CommonAnnotationBeanPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>COMMON_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册PersistenceAnnotationBeanPostProcessor类型的BeanDefinition</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>jpaPresent</span><span class=w> </span><span class=o>&amp;&amp;</span><span class=w> </span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>try</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>def</span><span class=p>.</span><span class=na>setBeanClass</span><span class=p>(</span><span class=n>ClassUtils</span><span class=p>.</span><span class=na>forName</span><span class=p>(</span><span class=n>PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME</span><span class=p>,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>AnnotationConfigUtils</span><span class=p>.</span><span class=na>class</span><span class=p>.</span><span class=na>getClassLoader</span><span class=p>()));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>catch</span><span class=w> </span><span class=p>(</span><span class=n>ClassNotFoundException</span><span class=w> </span><span class=n>ex</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>throw</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>IllegalStateException</span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=s>&#34;Cannot load optional framework class: &#34;</span><span class=w> </span><span class=o>+</span><span class=w> </span><span class=n>PERSISTENCE_ANNOTATION_PROCESSOR_CLASS_NAME</span><span class=p>,</span><span class=w> </span><span class=n>ex</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>PERSISTENCE_ANNOTATION_PROCESSOR_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册EventListenerMethodProcessor类型的BeanDefinition，用来处理@EventListener注解的</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>EVENT_LISTENER_PROCESSOR_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>EventListenerMethodProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>EVENT_LISTENER_PROCESSOR_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 注册DefaultEventListenerFactory类型的BeanDefinition，用来处理@EventListener注解的</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>registry</span><span class=p>.</span><span class=na>containsBeanDefinition</span><span class=p>(</span><span class=n>EVENT_LISTENER_FACTORY_BEAN_NAME</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>RootBeanDefinition</span><span class=w> </span><span class=n>def</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>RootBeanDefinition</span><span class=p>(</span><span class=n>DefaultEventListenerFactory</span><span class=p>.</span><span class=na>class</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>def</span><span class=p>.</span><span class=na>setSource</span><span class=p>(</span><span class=n>source</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>beanDefs</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registerPostProcessor</span><span class=p>(</span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>def</span><span class=p>,</span><span class=w> </span><span class=n>EVENT_LISTENER_FACTORY_BEAN_NAME</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>return</span><span class=w> </span><span class=n>beanDefs</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><p>    一路分析AnnotatedBeanDefinitionReader的源码发现，在AnnotatedBeanDefinitionReader的创建过程中，最终会调用org.springframework.context.annotation.AnnotationConfigUtils#registerAnnotationConfigProcessors注册各种的后置处理器bean定义，这些后置处理器都是作为Spring的基础组件提供后续服务的。其中就包含BeanFactoryPostProcessor相关的ConfigurationClassPostProcessor和EventListenerMethodProcessor两个实现。</p><p>    第25-27行中，beanFactory手动注册了Comparator实例<code>AnnotationAwareOrderComparator</code>用于后续编排BeanFactoryPostProcessor实现时进行排序，<code>AnnotationAwareOrderComparator</code>继承了<code>OrderComparator</code>，相关用法和源码解析在<a class=link href=/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/#OrderComparator>Spring源码BeanDefinition解析之ClassPathBeanDefinitionScanner</a>一文中OrderComparator章节已经介绍过了。</p><h3 id=beanfactorypostprocessor调用编排>BeanFactoryPostProcessor调用编排</h3><p>    BeanDefinitionRegistryPostProcessor接口继承了BeanFactoryPostProcessor接口，本质上也是BeanFactoryPostProcessor。那么如果程序中同时出现这两种接口的实现，这2种类型的接口实现优先级顺序如何定义呢？每一种类型的接口实现中如果有的实现了<code>PriorityOrdered</code>接口，有的实现了<code>Ordered</code>接口那么优先级又如何定义呢？同时Spring中这2种类型的接口实现有的是通过编程式用户手动添加注册、有的是通过@Component注解声明式定义的那么优先级顺序又如何定义呢？本质上来说针对BeanFactoryPostProcessor及其子接口的实现Spring需要从添加方式、接口类型、接口优先级这三个维度进行执行顺序的编排！这里先直接给出结论，再进行源码解析。</p><p><img src=/p/spring-beanfactorypostprocessor/bfppPri.png width=1887 height=2129 srcset="/p/spring-beanfactorypostprocessor/bfppPri_hu611d45453c013b56ad160ca91591f740_1002296_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/bfppPri_hu611d45453c013b56ad160ca91591f740_1002296_1024x0_resize_box_3.png 1024w" loading=lazy alt=BeanFactoryPostProcessor执行优先级 class=gallery-image data-flex-grow=88 data-flex-basis=212px></p><p>    执行顺序的源码如上图所示，源码位于org.springframework.context.support.PostProcessorRegistrationDelegate#invokeBeanFactoryPostProcessors方法中。整体执行流程在实例化bean之前。</p><div class=highlight><div class=chroma><table class=lntable><tr><td class=lntd><pre tabindex=0 class=chroma><code><span class=lnt>  1
+</span><span class=lnt>  2
+</span><span class=lnt>  3
+</span><span class=lnt>  4
+</span><span class=lnt>  5
+</span><span class=lnt>  6
+</span><span class=lnt>  7
+</span><span class=lnt>  8
+</span><span class=lnt>  9
+</span><span class=lnt> 10
+</span><span class=lnt> 11
+</span><span class=lnt> 12
+</span><span class=lnt> 13
+</span><span class=lnt> 14
+</span><span class=lnt> 15
+</span><span class=lnt> 16
+</span><span class=lnt> 17
+</span><span class=lnt> 18
+</span><span class=lnt> 19
+</span><span class=lnt> 20
+</span><span class=lnt> 21
+</span><span class=lnt> 22
+</span><span class=lnt> 23
+</span><span class=lnt> 24
+</span><span class=lnt> 25
+</span><span class=lnt> 26
+</span><span class=lnt> 27
+</span><span class=lnt> 28
+</span><span class=lnt> 29
+</span><span class=lnt> 30
+</span><span class=lnt> 31
+</span><span class=lnt> 32
+</span><span class=lnt> 33
+</span><span class=lnt> 34
+</span><span class=lnt> 35
+</span><span class=lnt> 36
+</span><span class=lnt> 37
+</span><span class=lnt> 38
+</span><span class=lnt> 39
+</span><span class=lnt> 40
+</span><span class=lnt> 41
+</span><span class=lnt> 42
+</span><span class=lnt> 43
+</span><span class=lnt> 44
+</span><span class=lnt> 45
+</span><span class=lnt> 46
+</span><span class=lnt> 47
+</span><span class=lnt> 48
+</span><span class=lnt> 49
+</span><span class=lnt> 50
+</span><span class=lnt> 51
+</span><span class=lnt> 52
+</span><span class=lnt> 53
+</span><span class=lnt> 54
+</span><span class=lnt> 55
+</span><span class=lnt> 56
+</span><span class=lnt> 57
+</span><span class=lnt> 58
+</span><span class=lnt> 59
+</span><span class=lnt> 60
+</span><span class=lnt> 61
+</span><span class=lnt> 62
+</span><span class=lnt> 63
+</span><span class=lnt> 64
+</span><span class=lnt> 65
+</span><span class=lnt> 66
+</span><span class=lnt> 67
+</span><span class=lnt> 68
+</span><span class=lnt> 69
+</span><span class=lnt> 70
+</span><span class=lnt> 71
+</span><span class=lnt> 72
+</span><span class=lnt> 73
+</span><span class=lnt> 74
+</span><span class=lnt> 75
+</span><span class=lnt> 76
+</span><span class=lnt> 77
+</span><span class=lnt> 78
+</span><span class=lnt> 79
+</span><span class=lnt> 80
+</span><span class=lnt> 81
+</span><span class=lnt> 82
+</span><span class=lnt> 83
+</span><span class=lnt> 84
+</span><span class=lnt> 85
+</span><span class=lnt> 86
+</span><span class=lnt> 87
+</span><span class=lnt> 88
+</span><span class=lnt> 89
+</span><span class=lnt> 90
+</span><span class=lnt> 91
+</span><span class=lnt> 92
+</span><span class=lnt> 93
+</span><span class=lnt> 94
+</span><span class=lnt> 95
+</span><span class=lnt> 96
+</span><span class=lnt> 97
+</span><span class=lnt> 98
+</span><span class=lnt> 99
+</span><span class=lnt>100
+</span><span class=lnt>101
+</span><span class=lnt>102
+</span><span class=lnt>103
+</span><span class=lnt>104
+</span><span class=lnt>105
+</span><span class=lnt>106
+</span><span class=lnt>107
+</span><span class=lnt>108
+</span><span class=lnt>109
+</span><span class=lnt>110
+</span><span class=lnt>111
+</span><span class=lnt>112
+</span><span class=lnt>113
+</span><span class=lnt>114
+</span><span class=lnt>115
+</span><span class=lnt>116
+</span><span class=lnt>117
+</span><span class=lnt>118
+</span><span class=lnt>119
+</span><span class=lnt>120
+</span><span class=lnt>121
+</span><span class=lnt>122
+</span><span class=lnt>123
+</span><span class=lnt>124
+</span><span class=lnt>125
+</span><span class=lnt>126
+</span><span class=lnt>127
+</span><span class=lnt>128
+</span><span class=lnt>129
+</span><span class=lnt>130
+</span><span class=lnt>131
+</span><span class=lnt>132
+</span><span class=lnt>133
+</span><span class=lnt>134
+</span><span class=lnt>135
+</span><span class=lnt>136
+</span><span class=lnt>137
+</span><span class=lnt>138
+</span><span class=lnt>139
+</span><span class=lnt>140
+</span><span class=lnt>141
+</span><span class=lnt>142
+</span><span class=lnt>143
+</span><span class=lnt>144
+</span><span class=lnt>145
+</span><span class=lnt>146
+</span><span class=lnt>147
+</span><span class=lnt>148
+</span><span class=lnt>149
+</span><span class=lnt>150
+</span></code></pre></td><td class=lntd><pre tabindex=0 class=chroma><code class=language-java data-lang=java><span class=line><span class=cl><span class=kd>public</span><span class=w> </span><span class=kd>static</span><span class=w> </span><span class=kt>void</span><span class=w> </span><span class=nf>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>			</span><span class=n>ConfigurableListableBeanFactory</span><span class=w> </span><span class=n>beanFactory</span><span class=p>,</span><span class=w> </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanFactoryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>beanFactoryPostProcessors</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>   </span><span class=c1>// BeanFactoryPostProcessor、BeanDefinitionRegistryPostProcessor</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Invoke BeanDefinitionRegistryPostProcessors first, if any.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>Set</span><span class=o>&lt;</span><span class=n>String</span><span class=o>&gt;</span><span class=w> </span><span class=n>processedBeans</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>HashSet</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>beanFactory</span><span class=w> </span><span class=k>instanceof</span><span class=w> </span><span class=n>BeanDefinitionRegistry</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>BeanDefinitionRegistry</span><span class=w> </span><span class=n>registry</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=p>(</span><span class=n>BeanDefinitionRegistry</span><span class=p>)</span><span class=w> </span><span class=n>beanFactory</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanFactoryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>regularPostProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>registryProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// beanFactoryPostProcessors集合一般情况下都是空的，除非我们手动调用容器的addBeanFactoryPostProcessor方法添加了</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// beanFactoryPostProcessors中可能包含了：普通BeanFactoryPostProcessor对象和BeanDefinitionRegistryPostProcessor对象</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 对于BeanDefinitionRegistryPostProcessor对象，会执行自己的postProcessBeanDefinitionRegistry()方法</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>BeanFactoryPostProcessor</span><span class=w> </span><span class=n>postProcessor</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>beanFactoryPostProcessors</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>postProcessor</span><span class=w> </span><span class=k>instanceof</span><span class=w> </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=w> </span><span class=n>registryProcessor</span><span class=w> </span><span class=o>=</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                        </span><span class=p>(</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>)</span><span class=w> </span><span class=n>postProcessor</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>registryProcessor</span><span class=p>.</span><span class=na>postProcessBeanDefinitionRegistry</span><span class=p>(</span><span class=n>registry</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>registryProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>registryProcessor</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>regularPostProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>postProcessor</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Do not initialize FactoryBeans here: We need to leave all regular beans</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// uninitialized to let the bean factory post-processors apply to them!</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Separate between BeanDefinitionRegistryPostProcessors that implement</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// PriorityOrdered, Ordered, and the rest.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>currentRegistryProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 执行扫描出来的BeanDefinitionRegistryPostProcessor</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// First, invoke the BeanDefinitionRegistryPostProcessors that implement PriorityOrdered.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>postProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBeanNamesForType</span><span class=p>(</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>,</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>ppName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>postProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>isTypeMatch</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>PriorityOrdered</span><span class=p>.</span><span class=na>class</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>processedBeans</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>ppName</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 升序排序</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sortPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>registryProcessors</span><span class=p>.</span><span class=na>addAll</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>invokeBeanDefinitionRegistryPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getApplicationStartup</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>clear</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Next, invoke the BeanDefinitionRegistryPostProcessors that implement Ordered.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>postProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBeanNamesForType</span><span class=p>(</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>,</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>ppName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>postProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// processedBeans表示该beanFactoryPostProcessor的postProcessBeanDefinitionRegistry()方法已经执行过了，不再重复执行</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>processedBeans</span><span class=p>.</span><span class=na>contains</span><span class=p>(</span><span class=n>ppName</span><span class=p>)</span><span class=w> </span><span class=o>&amp;&amp;</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>isTypeMatch</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>Ordered</span><span class=p>.</span><span class=na>class</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=n>processedBeans</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>ppName</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>sortPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>registryProcessors</span><span class=p>.</span><span class=na>addAll</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>invokeBeanDefinitionRegistryPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getApplicationStartup</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>clear</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Finally, invoke all other BeanDefinitionRegistryPostProcessors until no further ones appear.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 执行哪些没有实现了PriorityOrdered或Ordered接口的普通BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry()方法</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 在这个过程中可能会向BeanFactory中注册另外的BeanDefinitionRegistryPostProcessor，所以需要while，直到确定所有的BeanDefinitionRegistryPostProcessor都执行完了</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 在这个过程中注册的BeanDefinitionRegistryPostProcessor，所实现的PriorityOrdered或Ordered接口可能会不按顺序执行</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 比如 A注册了B和C,B又注册了D和E,那么B和C会按顺序执行，D和E也会按顺序执行，但是B、C、D、E整体不能保证是顺序执行</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=kt>boolean</span><span class=w> </span><span class=n>reiterate</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>true</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>while</span><span class=w> </span><span class=p>(</span><span class=n>reiterate</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>reiterate</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>false</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>postProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBeanNamesForType</span><span class=p>(</span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>,</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>ppName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>postProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=o>!</span><span class=n>processedBeans</span><span class=p>.</span><span class=na>contains</span><span class=p>(</span><span class=n>ppName</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>BeanDefinitionRegistryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>processedBeans</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>ppName</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                    </span><span class=n>reiterate</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=kc>true</span><span class=p>;</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>                </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>sortPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>registryProcessors</span><span class=p>.</span><span class=na>addAll</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>invokeBeanDefinitionRegistryPostProcessors</span><span class=p>(</span><span class=n>currentRegistryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>registry</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getApplicationStartup</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>currentRegistryProcessors</span><span class=p>.</span><span class=na>clear</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Now, invoke the postProcessBeanFactory callback of all processors handled so far.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 执行完BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry()方法后，</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 再执行BeanDefinitionRegistryPostProcessor的postProcessBeanFactory()方法</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>registryProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// 执行手动添加的普通BeanFactoryPostProcessor的postProcessBeanFactory()方法</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>regularPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=c1>// Invoke factory processors registered with the context instance.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>beanFactoryPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 执行扫描出来的普通BeanFactoryPostProcessor</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Do not initialize FactoryBeans here: We need to leave all regular beans</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// uninitialized to let the bean factory post-processors apply to them!</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>String</span><span class=o>[]</span><span class=w> </span><span class=n>postProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBeanNamesForType</span><span class=p>(</span><span class=n>BeanFactoryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>,</span><span class=w> </span><span class=kc>true</span><span class=p>,</span><span class=w> </span><span class=kc>false</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Separate between BeanFactoryPostProcessors that implement PriorityOrdered,</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Ordered, and the rest.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanFactoryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>priorityOrderedPostProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>List</span><span class=o>&lt;</span><span class=n>String</span><span class=o>&gt;</span><span class=w> </span><span class=n>orderedPostProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>List</span><span class=o>&lt;</span><span class=n>String</span><span class=o>&gt;</span><span class=w> </span><span class=n>nonOrderedPostProcessorNames</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// 先进行分类</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>ppName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>postProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>processedBeans</span><span class=p>.</span><span class=na>contains</span><span class=p>(</span><span class=n>ppName</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=c1>// skip - already processed in first phase above</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>else</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>isTypeMatch</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>PriorityOrdered</span><span class=p>.</span><span class=na>class</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>priorityOrderedPostProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>BeanFactoryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>else</span><span class=w> </span><span class=k>if</span><span class=w> </span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>isTypeMatch</span><span class=p>(</span><span class=n>ppName</span><span class=p>,</span><span class=w> </span><span class=n>Ordered</span><span class=p>.</span><span class=na>class</span><span class=p>))</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>orderedPostProcessorNames</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>ppName</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=k>else</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>            </span><span class=n>nonOrderedPostProcessorNames</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>ppName</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// First, invoke the BeanFactoryPostProcessors that implement PriorityOrdered.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>sortPostProcessors</span><span class=p>(</span><span class=n>priorityOrderedPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>priorityOrderedPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Next, invoke the BeanFactoryPostProcessors that implement Ordered.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanFactoryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>orderedPostProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>(</span><span class=n>orderedPostProcessorNames</span><span class=p>.</span><span class=na>size</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>postProcessorName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>orderedPostProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>orderedPostProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>postProcessorName</span><span class=p>,</span><span class=w> </span><span class=n>BeanFactoryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>sortPostProcessors</span><span class=p>(</span><span class=n>orderedPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>orderedPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Finally, invoke all other BeanFactoryPostProcessors.</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>List</span><span class=o>&lt;</span><span class=n>BeanFactoryPostProcessor</span><span class=o>&gt;</span><span class=w> </span><span class=n>nonOrderedPostProcessors</span><span class=w> </span><span class=o>=</span><span class=w> </span><span class=k>new</span><span class=w> </span><span class=n>ArrayList</span><span class=o>&lt;&gt;</span><span class=p>(</span><span class=n>nonOrderedPostProcessorNames</span><span class=p>.</span><span class=na>size</span><span class=p>());</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=k>for</span><span class=w> </span><span class=p>(</span><span class=n>String</span><span class=w> </span><span class=n>postProcessorName</span><span class=w> </span><span class=p>:</span><span class=w> </span><span class=n>nonOrderedPostProcessorNames</span><span class=p>)</span><span class=w> </span><span class=p>{</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>        </span><span class=n>nonOrderedPostProcessors</span><span class=p>.</span><span class=na>add</span><span class=p>(</span><span class=n>beanFactory</span><span class=p>.</span><span class=na>getBean</span><span class=p>(</span><span class=n>postProcessorName</span><span class=p>,</span><span class=w> </span><span class=n>BeanFactoryPostProcessor</span><span class=p>.</span><span class=na>class</span><span class=p>));</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=p>}</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>invokeBeanFactoryPostProcessors</span><span class=p>(</span><span class=n>nonOrderedPostProcessors</span><span class=p>,</span><span class=w> </span><span class=n>beanFactory</span><span class=p>);</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// Clear cached merged bean definitions since the post-processors might have</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=c1>// modified the original metadata, e.g. replacing placeholders in values...</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w>    </span><span class=n>beanFactory</span><span class=p>.</span><span class=na>clearMetadataCache</span><span class=p>();</span><span class=w>
+</span></span></span><span class=line><span class=cl><span class=w></span><span class=p>}</span><span class=w>
+</span></span></span></code></pre></td></tr></table></div></div><ul><li>第7-25行：优先执行编程式手动添加的BeanDefinitionRegistryPostProcessor实现，同时筛选出手动添加的BeanFactoryPostProcessor实现供后续执行。</li><li>第31-48行：执行扫描出的BeanDefinitionRegistryPostProcessor类型的实现了PriorityOrdered接口的实现的postProcessBeanDefinitionRegistry方法。这部分功能通过BeanFactory查找、实例化实现。</li><li>第51-62行：执行扫描出的BeanDefinitionRegistryPostProcessor类型的实现了Ordered接口的实现的postProcessBeanDefinitionRegistry方法。</li><li>第69-83行：执行未继承任何优先级顺序接口的普通BeanDefinitionRegistryPostProcessor的postProcessBeanDefinitionRegistry方法。如果在执行postProcessBeanDefinitionRegistry方法时又注册了BeanDefinitionRegistryPostProcessor的Bean定义，那么会迭代继续获取BeanDefinitionRegistryPostProcessor实现并执行postProcessBeanDefinitionRegistry方法，直到最后容器中找不到BeanDefinitionRegistryPostProcessor或者找到的BeanDefinitionRegistryPostProcessor已经都被执行过了才停止。</li><li>第89行：由于BeanDefinitionRegistryPostProcessor类型的实现也继承了BeanFactoryPostProcessor接口，所以前面手动显示注册的BeanDefinitionRegistryPostProcessor实现和声明式注册的BeanDefinitionRegistryPostProcessor实现最后会被调用执行其postProcessBeanFactory方法。至此所有手动或自动添加的BeanDefinitionRegistryPostProcessor的实现的所有方法都已经被实现。</li><li>第92-97行：执行手动添加的BeanFactoryPostProcessor实现的postProcessBeanFactory方法。</li><li>第104-126行：扫描BeanFactoryPostProcessor的实现按PriorityOrdered、Ordered、未继承优先级顺序接口分类。</li><li>第129-149行：一次执行分类的BeanFactoryPostProcessor实现。</li></ul><p>    整个invokeBeanFactoryPostProcessors方法的逻辑还是比较简单清晰的，首先Spring根据接口类型进行优先级分类，先执行BeanDefinitionRegistryPostProcessor相关实现的所有方法，再实现BeanFactoryPostProcessor实现的方法；接着对于每一类接口，都是优先执行手动编程式添加的组件，然后再执行声明式添加的组件；对于声明式方法添加的组件，再根据优先级接口顺序决定执行先后顺序。</p><p><img src=/p/spring-beanfactorypostprocessor/bfpp%E6%89%A7%E8%A1%8C%E7%BB%B4%E5%BA%A6.png width=1324 height=881 srcset="/p/spring-beanfactorypostprocessor/bfpp%E6%89%A7%E8%A1%8C%E7%BB%B4%E5%BA%A6_hucfed748464c40d001fbf3ea5d772a44a_166590_480x0_resize_box_3.png 480w, /p/spring-beanfactorypostprocessor/bfpp%E6%89%A7%E8%A1%8C%E7%BB%B4%E5%BA%A6_hucfed748464c40d001fbf3ea5d772a44a_166590_1024x0_resize_box_3.png 1024w" loading=lazy alt=BeanFactoryPostProcessor执行维度 class=gallery-image data-flex-grow=150 data-flex-basis=360px></p></section><footer class=article-footer><section class=article-tags><a href=/tags/spring/>Spring</a>
+<a href=/tags/beandefinition/>BeanDefinition</a>
+<a href=/tags/beanfactorypostprocessor/>BeanFactoryPostProcessor</a></section><section class=article-copyright><svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-copyright" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentcolor" fill="none" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z"/><circle cx="12" cy="12" r="9"/><path d="M14.5 9a3.5 4 0 100 6"/></svg>
+<span>Licensed under CC BY-NC-SA 4.0</span></section></footer></article><aside class=related-content--wrapper><h2 class=section-title>相关文章</h2><div class=related-content><div class="flex article-list--tile"><article class=has-image><a href=/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/><div class=article-image><img src=/p/classpathbeandefinitionscanner%E4%B8%BB%E6%B5%81%E7%A8%8B%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90/bd.5ef681d49dc7cd92d81ab789b1b55bba_hu1728d03202da6945cada7b02a8c1392a_152544_250x150_fill_q75_box_smart1.jpeg width=250 height=150 loading=lazy alt="Featured image of post ClassPathBeanDefinitionScanner主流程源码解析" data-hash="md5-XvaB1J3HzZLYGreJsbVbug=="></div><div class=article-details><h2 class=article-title>ClassPathBeanDefinitionScanner主流程源码解析</h2></div></a></article><article class=has-image><a href=/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/><div class=article-image><img src=/p/spring-beandefinition%E8%A7%A3%E6%9E%90%E4%B9%8Bclasspathbeandefinitionscanner/bd.df5d9888760ad5df738d7a0cc2d819ad_hub179f4918e5901a40076b37f231e41db_333377_250x150_fill_q75_box_smart1.jpeg width=250 height=150 loading=lazy alt="Featured image of post Spring BeanDefinition解析之ClassPathBeanDefinitionScanner" data-hash="md5-312YiHYK1d9zjXoMwtgZrQ=="></div><div class=article-details><h2 class=article-title>Spring BeanDefinition解析之ClassPathBeanDefinitionScanner</h2></div></a></article><article class=has-image><a href=/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/><div class=article-image><img src=/p/spring%E6%BA%90%E7%A0%81%E8%A7%A3%E6%9E%90%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86/spring-framework.341a7e7b389c39cf09006eeec0798f8a_huc84201bcde1c14e7efaadba74ae18986_15230_250x150_fill_box_smart1_3.png width=250 height=150 loading=lazy alt="Featured image of post Spring源码解析前置知识" data-hash="md5-NBp+ezicOc8JAG7uwHmPig=="></div><div class=article-details><h2 class=article-title>Spring源码解析前置知识</h2></div></a></article></div></div></aside><div class=disqus-container><div id=disqus_thread></div><script>window.disqus_config=function(){},function(){if(["localhost","127.0.0.1"].indexOf(window.location.hostname)!=-1){document.getElementById("disqus_thread").innerHTML="Disqus comments not available by default when the website is previewed locally.";return}var t=document,e=t.createElement("script");e.async=!0,e.src="//hugo-theme-stack.disqus.com/embed.js",e.setAttribute("data-timestamp",+new Date),(t.head||t.body).appendChild(e)}()</script><noscript>Please enable JavaScript to view the <a href=https://disqus.com/?ref_noscript>comments powered by Disqus.</a></noscript><a href=https://disqus.com class=dsq-brlink>comments powered by <span class=logo-disqus>Disqus</span></a></div><style>.disqus-container{background-color:var(--card-background);border-radius:var(--card-border-radius);box-shadow:var(--shadow-l1);padding:var(--card-padding)}</style><script>window.addEventListener("onColorSchemeChange",e=>{typeof DISQUS=="object"&&DISQUS.reset({reload:!0})})</script><footer class=site-footer><section class=copyright>&copy;
+2020 -
+2024 Lightsu's blog</section><section class=powerby>Built with <a href=https://gohugo.io/ target=_blank rel=noopener>Hugo</a><br>主题 <b><a href=https://github.com/CaiJimmy/hugo-theme-stack target=_blank rel=noopener data-version=3.21.0>Stack</a></b> 由 <a href=https://jimmycai.com target=_blank rel=noopener>Jimmy</a> 设计</section></footer><div class=pswp tabindex=-1 role=dialog aria-hidden=true><div class=pswp__bg></div><div class=pswp__scroll-wrap><div class=pswp__container><div class=pswp__item></div><div class=pswp__item></div><div class=pswp__item></div></div><div class="pswp__ui pswp__ui--hidden"><div class=pswp__top-bar><div class=pswp__counter></div><button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+<button class="pswp__button pswp__button--share" title=Share></button>
+<button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+<button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button><div class=pswp__preloader><div class=pswp__preloader__icn><div class=pswp__preloader__cut><div class=pswp__preloader__donut></div></div></div></div></div><div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap"><div class=pswp__share-tooltip></div></div><button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+</button>
+<button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)"></button><div class=pswp__caption><div class=pswp__caption__center></div></div></div></div></div><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.js integrity="sha256-ePwmChbbvXbsO02lbM3HoHbSHTHFAeChekF1xKJdleo=" crossorigin=anonymous defer></script><script src=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe-ui-default.min.js integrity="sha256-UKkzOn/w1mBxRmLLGrSeyB4e1xbrp4xylgAWb3M42pU=" crossorigin=anonymous defer></script><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/default-skin/default-skin.min.css crossorigin=anonymous><link rel=stylesheet href=https://cdn.jsdelivr.net/npm/photoswipe@4.1.3/dist/photoswipe.min.css crossorigin=anonymous></main></div><script src=https://cdn.jsdelivr.net/npm/node-vibrant@3.1.6/dist/vibrant.min.js integrity="sha256-awcR2jno4kI5X0zL8ex0vi2z+KMkF24hUW8WePSA9HM=" crossorigin=anonymous></script><script type=text/javascript src=/ts/main.js defer></script><script>(function(){const e=document.createElement("link");e.href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&display=swap",e.type="text/css",e.rel="stylesheet",document.head.appendChild(e)})()</script></body></html>
