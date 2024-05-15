@@ -223,7 +223,7 @@ data-flex-basis="470px"
 &lt;h3 id="import">@Import&lt;/h3>
 &lt;p>    使用@Import可以导入一个或多个bean组件，根据被导入的组件类型又可以细分为如下几种用法。&lt;/p>
 &lt;h4 id="configuration">Configuration&lt;/h4>
-&lt;p>    如果被导入的类是一个普通类，Spring就会把它当作是配置类来处理。准确的说被导入的类既不是ImportSelector类型也不是ImportBeanDefinitionRegistrar类型，那么Spring就会把这个被导入的类统一当作是配置类来处理，不管这个导入类实际是普通的类还是一个真正的配置类。&lt;/p>
+&lt;p>    如果被导入的类是一个普通类，Spring就会把它当作是配置类来处理。那什么是普通类呢？准确的说被导入的类没有实现ImportSelector接口也没有实现ImportBeanDefinitionRegistrar接口，那么Spring就会把这个被导入的类统一当作是配置类来处理，不管这个导入类实际是普通的类还是一个真正的配置类。具体看下面的示例：&lt;/p>
 &lt;div class="highlight">&lt;div class="chroma">
 &lt;table class="lntable">&lt;tr>&lt;td class="lntd">
 &lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
@@ -260,6 +260,7 @@ data-flex-basis="470px"
 &lt;/span>&lt;span class="lnt">32
 &lt;/span>&lt;span class="lnt">33
 &lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
 &lt;/span>&lt;/code>&lt;/pre>&lt;/td>
 &lt;td class="lntd">
 &lt;pre tabindex="0" class="chroma">&lt;code class="language-java" data-lang="java">&lt;span class="line">&lt;span class="cl">&lt;span class="kd">public&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="kd">class&lt;/span> &lt;span class="nc">EmployeeService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">{&lt;/span>&lt;span class="w">
@@ -293,13 +294,14 @@ data-flex-basis="470px"
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">OrderService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">orderService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">OrderService&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">applicationContext&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;orderService&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">orderService&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">say&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// 从容器获取EmployeeService实例&lt;/span>&lt;span class="w">
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="c1">// EmployeeService在容器中的beanName为全限定名&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">EmployeeService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">employeeService&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="o">=&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="n">EmployeeService&lt;/span>&lt;span class="p">)&lt;/span>&lt;span class="w"> &lt;/span>&lt;span class="n">applicationContext&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">getBean&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s">&amp;#34;com.spring.service.EmployeeService&amp;#34;&lt;/span>&lt;span class="p">);&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w"> &lt;/span>&lt;span class="n">employeeService&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="na">say&lt;/span>&lt;span class="p">();&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="w">&lt;/span>&lt;span class="p">}&lt;/span>&lt;span class="w">
 &lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
 &lt;/div>
-&lt;/div>&lt;p>    EmployeeService和OrderService是两个普通的java类，MyConfig是一个配置类并且在里面声明了Bean方法需要将OrderService注册到容器内，同时我们在AppConfig类上使用@Import注解导入MyConfig和EmployeeService，最终在main方法里都能获取OrderService和EmployeeService的实例对象，注意@Bean方法声明的Bean名称为类的全路径。&lt;/p>
-&lt;p>    此种配置方式，入口的配置类就是AppConfig，当Spring解析到AppConfig上有@Import注解时，会将MyConfig和EmployeeService包装成ConfigurationClass暂存起来，同时MyConfig对应的ConfigurationClass里面还会有@Bean方法的元数据&lt;code>MethodMetadata&lt;/code>信息，用于后续注册@Bean声明的方法返回对象。MyConfig类在整个环节中的作用更像是一个中间过渡载体，实际我们最终希望注册的是MyConfig中的@Bean方法声明的返回对象，但是Spring也会注册MyConfig类，因为对于导入的类，不管是普通的类还是带有@Configuration的类Spring都当作配置类来统一处理。&lt;/p>
+&lt;/div>&lt;p>    EmployeeService和OrderService是两个普通的java类，MyConfig是一个使用了@Configuration声明的配置类，并且在里面声明了Bean方法需要将OrderService注册到容器内。在AppConfig类上使用@Import注解导入MyConfig和EmployeeService，最终在main方法里都能获取OrderService和EmployeeService的实例对象，注意@Bean方法声明的Bean名称为类的全路径。&lt;/p>
+&lt;p>    在这种配置场景下，EmployeeService就是一个普通的类，没有继承或实现任何接口和父类，而MyConfig由于使用了@Configuration注解，被我们声明成了一个配置类，目的是要在配置类中进行一些bean的设置。入口的配置类就是AppConfig，当Spring解析到AppConfig上有@Import注解时，会将MyConfig和EmployeeService包装成ConfigurationClass暂存起来，MyConfig对应的ConfigurationClass里面还会存储解析得到的@Bean方法的元数据&lt;code>MethodMetadata&lt;/code>信息，用于后续注册@Bean声明的方法返回对象。MyConfig类在整个环节中的作用更像是一个中间过渡载体，实际我们最终希望注册的是MyConfig中的@Bean方法声明的返回对象，但是Spring也会注册MyConfig类。对于导入的类，不管是普通的类还是带有@Configuration注解的类Spring在底层都是当作配置类来统一处理，可能你会觉得当解析到EmployeeService时为何不直接把它注册到bean定义工厂中去，还要把它当作一个配置类进一步地解析呢？如果EmployeeService中有@Bean配置的方法呢，那么EmployeeService此时是不是变成了一个配置类呢，虽然没有使用@Configuration显示声明，但是实际上EmployeeService就是一个配置类。&lt;/p>
 &lt;h4 id="importselector">ImportSelector&lt;/h4>
 &lt;h5 id="deferredimportselector">DeferredImportSelector&lt;/h5>
 &lt;h5 id="importbeandefinitionregistrar">ImportBeanDefinitionRegistrar&lt;/h5>
